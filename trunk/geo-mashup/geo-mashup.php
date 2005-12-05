@@ -172,6 +172,12 @@ class GeoMashup {
 			$opts['map_height'] = '500';
 			$opts['info_window_width'] = '300';
 			$opts['font_size'] = '75';
+			if (!isset($opts['map_control'])) {
+				$opts['map_control'] = 'GSmallMapControl';
+			}
+			if (!isset($opts['add_map_type_control'])) {
+				$opts['add_map_type_control'] = 'true';
+			}
 			update_option('geo_mashup_options', $opts);
 			echo '<div class="updated"><p>'.__('Defaults set.', 'GeoMashup').'</p></div>';
 		}
