@@ -84,6 +84,17 @@ GeoMashup.createMarker = function(point) {
 			} // end location posts loop
 			GeoMashup.loading = false;
 			marker.openInfoWindowXslt(GeoMashup.locations[point].xmlDoc,xslt);
+		} else {
+			// This foulness is required to unescape entities in Firefox
+			var divs = GeoMashup.container.getElementsByTagName("div");
+			for(var i=0; i<divs.length; i++) {
+				if (divs[i].getAttribute("class") == "storycontent") {
+					while (divs[i].innerHTML.indexOf('\&amp;') >= 0) {
+						divs[i].innerHTML = divs[i].innerHTML.replace(/&amp;/,'\&');
+					}
+				}
+			}
+
 		}
 	}); // end marker listener
 
@@ -91,7 +102,7 @@ GeoMashup.createMarker = function(point) {
 }
 
 GeoMashup.checkDependencies = function () {
-	if (typeof(GMap) == "undefined") {
+	if (typeof(GMap) == "undefined" || !GBrowserIsCompatible()) {
 		this.container.innerHTML = '<p class="errormessage">' +
 			'Sorry, the Google Maps script failed to load. Have you entered your ' +
 			'<a href="http://maps.google.com/apis/maps/signup.html">API key</a> ' +
@@ -164,6 +175,10 @@ GeoMashup.loadMap = function() {
 		} // end onreadystatechange function
 		request.send(null);
 	});
+	
+	// Experimental - add WMS map types
+	// var tsdrg = new WMSSpec(this.map.mapTypes[0], "http://www.terraserver-usa.com/ogcmap6.ashx?", "Topo", "DRG", "", "image/jpeg");
+	// this.map.mapTypes.push(tsdrg);
 
 	if (!this.loadLat && !this.loadLon) {
 		// look for load settings in cookies
@@ -203,10 +218,19 @@ GeoMashup.loadMap = function() {
 		}
 	}
 
-	this.map.addControl(new GSmallMapControl());
-	this.map.addControl(new GMapTypeControl());
-	if (this.loadType) 
-	{
+	// Add controls
+	if (this.mapControl == 'GSmallZoomControl') {
+		this.map.addControl(new GSmallZoomControl());
+	} else if (this.mapControl == 'GSmallMapControl') {
+		this.map.addControl(new GSmallMapControl());
+	} else if (this.mapControl == 'GLargeMapControl') {
+		this.map.addControl(new GLargeMapControl());
+	}
+	
+	if (this.addMapTypeControl) {
+		this.map.addControl(new GMapTypeControl());
+	}
+	if (this.loadType) {
 		this.map.setMapType(this.loadType);
 	}
 } // end loadMap();
