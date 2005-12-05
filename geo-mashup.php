@@ -3,7 +3,7 @@
 Plugin Name: Geo Mashup
 Plugin URI: http://www.cyberhobo.net/downloads/geo-mashup-plugin/
 Description: Adds a Google Maps mashup of blog posts geocoded with the Geo plugin. For WordPress 1.5.1 or higher. Minimal instructions and configuration will be in <a href="options-general.php?page=geo-mashup/geo-mashup.php">Options->Geo Mashup</a> after the plugin is activated.
-Version: 0.2 Beta
+Version: 0.3 Beta
 Author: Dylan Kuhn
 Author URI: http://www.cyberhobo.net/
 Minimum WordPress Version Required: 1.5.1
@@ -24,11 +24,6 @@ useful, but WITHOUT ANY WARRANTY; without even the implied
 warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
 PURPOSE. See the GNU General Public License for more
 details.
-
-You should have received a copy of the GNU General Public
-License along with this program; if not, write to the Free
-Software Foundation, Inc., 59 Temple Place, Suite 330,
-Boston, MA 02111-1307 USA
 */
 
 load_plugin_textdomain('GeoMashup');
@@ -47,13 +42,18 @@ class GeoMashup {
 		$linkDir = get_bloginfo('wpurl')."/wp-content/plugins/geo-mashup";
 		if ($opts['google_key']) {
 			// Generate the mashup javascript
-			// ABQIAAAA6EmEUs9xswJKO1QE3fbmcRRbGpYcqmS-5O7vGRdcs734576xTRQFXBBqKQ9s3AlJAHsF2deBq7cgbg
+			// echo '<script type="text/javascript" src="'.$linkDir.'/GMaps_WMSSpec_0.5.js"></script>';
 			echo '
 			<script src="http://maps.google.com/maps?file=api&amp;v=1&amp;key='.$opts['google_key'].'" type="text/javascript"></script>
 			<script type="text/javascript" src="'.$linkDir.'/geo-mashup.js"></script>
 			<script type="text/javascript">
 				GeoMashup.linkDir = "'.$linkDir.'";
-				GeoMashup.rssUri = "'.get_bloginfo('wpurl').'/wp-rss2.php";';
+				GeoMashup.rssUri = "'.get_bloginfo('wpurl').'/wp-rss2.php";
+				GeoMashup.mapControl = "'.$opts['map_control'].'";';
+			if ($opts['add_map_type_control'] == 'true') {
+				echo '
+				GeoMashup.addMapTypeControl = true;';
+			}
 			if ($opts['map_type']) {
 				echo '
 				GeoMashup.defaultMapType = '.$opts['map_type'].';';
@@ -74,22 +74,54 @@ class GeoMashup {
 			}
 			echo '
 			</script>';
+
+			if ($opts['include_style'] == 'true') {
+				// Generate map style
+				echo '
+				<style type="text/css">
+				#geoMashup {';
+				if ($opts['map_width']) {
+					echo '
+					width:'.$opts['map_width'].'px;';
+				}
+				if ($opts['map_height']) {
+					echo '
+					height:'.$opts['map_height'].'px;';
+				}
+				echo '
+				}
+				.locationinfo {';
+
+				if ($opts['info_window_width']) {
+					echo '
+					width:'.$opts['info_window_width'].'px;';
+				}
+				if ($opts['font_size']) {
+					echo '
+					font-size:'.$opts['font_size'].'%;';
+				}
+				echo '
+				}
+				</style>';
+			}
 		}
 	}
 
 	function the_content($content = '') {
 		$opts = get_settings('geo_mashup_options');
 		if (is_page($opts['mashup_page'])) {
-			if ($opts['google_key']) {
-				$height = $opts['map_height'] ? $opts['map_height'] : '500';
-				$width = $opts['map_width'] ? $opts['map_width'] : '400';
-				$content .= '<div id="geoMashup" style="width:' . $width .
-					'px; height:'.$height.'px;"></div>';
-			} else {
-				$content .= 'The Google Mashup plugin needs a 
+			$mapdiv = '<div id="geoMashup">';
+			if (!$opts['google_key']) {
+				$mapdiv .= '<p>The Google Mashup plugin needs a 
 					<a href="http://maps.google.com/apis/maps/signup.html">Google API Key</a> set
 					in the <a href="'.get_bloginfo('wpurl').'/wp-admin/options-general.php?page=geo-mashup/geo-mashup.php">
-					plugin options</a> before it will work.';
+					plugin options</a> before it will work.</p>';
+			}
+			$mapdiv .= '</div>';
+			if ($content) {
+				$content = preg_replace('/<\!--\s*Geo.?Mashup\s*-->/i',$mapdiv,$content);
+			} else {
+				$content = $mapdiv;
 			}
 		}
 		return $content;
@@ -102,38 +134,60 @@ class GeoMashup {
 	}
 
 	function options_page() {
-		$opts = get_settings('geo_mashup_options');
-		foreach($_POST as $name => $value) {
-			switch($name) {
-				case 'google_key':
-					$opts['google_key'] = $value;
-					break;
+		global $wpdb;
 
-				case 'map_width':
-					$opts['map_width'] = $value;
-					break;
-
-				case 'map_height':
-					$opts['map_height'] = $value;
-					break;
-
-				case 'mashup_page':
-					$opts['mashup_page'] = $value;
-					break;
-
-				case 'map_type':
-					$opts['map_type'] = $value;
-					break;
-
-				case 'zoom_level':
-					$opts['zoom_level'] = $value;
-					break;
+		$activePlugins = get_settings('active_plugins');
+		$isGeoActive = false;
+		foreach($activePlugins as $pluginFile) {
+			if ($pluginFile == 'geo.php') {
+				$isGeoActive = true;
 			}
 		}
-		if (isset($_POST['submit'])) {
-			echo '<div class="updated"><p>'.__('Options updated.', 'GeoMashup').'</p></div>';
-			update_option('geo_mashup_options', $opts);
+		if (!$isGeoActive) {
+			echo '
+			<div class="wrap">
+				<p>The <a href="http://dev.wp-plugins.org/wiki/GeoPlugin">Geo Plugin</a> needs to be installed 
+				and activated for Geo Mashup to work.</p>
+			</div>';
+			return;
 		}
+
+		$opts = get_settings('geo_mashup_options');
+
+		if (isset($_POST['submit'])) {
+			// Process option updates
+			$opts['include_style'] = 'false';
+			$opts['add_map_type_control'] = 'false';
+			foreach($_POST as $name => $value) {
+				$opts[$name] = $value;
+			}
+			update_option('geo_mashup_options', $opts);
+			echo '<div class="updated"><p>'.__('Options updated.', 'GeoMashup').'</p></div>';
+		}
+
+		// Add defaults for missing options
+		if (!isset($opts['include_style'])) {
+			$opts['include_style'] = 'true';
+			$opts['map_width'] = '400';
+			$opts['map_height'] = '500';
+			$opts['info_window_width'] = '300';
+			$opts['font_size'] = '75';
+			update_option('geo_mashup_options', $opts);
+			echo '<div class="updated"><p>'.__('Defaults set.', 'GeoMashup').'</p></div>';
+		}
+
+		// Create form elements
+		$pageSlugOptions = "";
+		$pageSlugs = $wpdb->get_col("SELECT DISTINCT post_name FROM $wpdb->posts " .
+			"WHERE post_status='static' ORDER BY post_name");
+		foreach($pageSlugs as $slug) {
+			$selected = "";
+			if ($slug == $opts['mashup_page']) {
+				$selected = ' selected="true"';
+			}
+			$pageSlugOptions .= '<option value="'.$slug.'"'.$selected.'>'.$slug."</option>\n";
+		}
+
 		$mapTypeOptions = "";
 		$mapTypes = Array(
 			'G_MAP_TYPE' => 'Roadmap',
@@ -146,12 +200,38 @@ class GeoMashup {
 			}
 			$mapTypeOptions .= '<option value="'.$type.'"'.$selected.'>'.$label."</option>\n";
 		}
+		$mapControlOptions = "";
+		$mapControls = Array(
+			'GSmallZoomControl' => 'Small Zoom',
+			'GSmallMapControl' => 'Small Pan/Zoom',
+			'GLargeMapControl' => 'Large Pan/Zoom');
+		foreach($mapControls as $type => $label) {
+			$selected = "";
+			if ($type == $opts['map_control']) {
+				$selected = ' selected="true"';
+			}
+			$mapControlOptions .= '<option value="'.$type.'"'.$selected.'>'.$label."</option>\n";
+		}
+
+		if ($opts['include_style'] == 'true') {
+			$styleChecked = ' checked="true"';
+		} else {
+			$styleChecked = '';
+		}
+
+		if ($opts['add_map_type_control'] == 'true') {
+			$mapTypeChecked = ' checked="true"';
+		} else {
+			$mapTypeChecked = '';
+		}
+		
+		// Write the form
 		echo '
 		<div class="wrap">
 			<form method="post">
 				<h2>'.__('Geo Mashup Options', 'GeoMashup').'</h2>
 				<fieldset>
-					<legend>'.__('Settings', 'GeoMashup').'</legend>
+					<legend>'.__('Behavior', 'GeoMashup').'</legend>
 					<table width="100%" cellspacing="2" cellpadding="5" class="editform">
 						<tr>
 							<th width="33%" scope="row">'.__('Google Maps Key', 'GeoMashup').'</th>
@@ -159,17 +239,20 @@ class GeoMashup {
 							<a href="http://maps.google.com/apis/maps/signup.html">'.__('Get yours here', 'GeoMashup').'</a></td>
 						</tr>
 						<tr>
-							<th scope="row">'.__('Page Slug', 'GeoMashup').'</th>
-							<td><input id="mashup_page" name="mashup_page" type="text" size="30" value="'.$opts['mashup_page'].'" /></td>
+							<th scope="row">'.__('Mashup Page Slug', 'GeoMashup').'</th>
+							<td>
+								<select id="mashup_page" name="mashup_page">'.$pageSlugOptions.'</select>
+							</td>
 						</tr>
 						<tr>
-							<th scope="row">'.__('Map Width', 'GeoMashup').'</th>
-							<td><input id="map_width" name="map_width" type="text" size="5" value="'.$opts['map_width'].'" />px</td>
+							<th scope="row">'.__('Map Control', 'GeoMashup').'</th>
+							<td>
+								<select id="map_control" name="map_control">'.$mapControlOptions.'</select>
+							</td>
 						</tr>
 						<tr>
-							<th scope="row">'.__('Map Height', 'GeoMashup').'</th>
-							<td><input id="map_height" name="map_height" type="text" size="5" value="'.$opts['map_height'].'" />px</td>
-						</tr>
+							<th scope="row">'.__('Add Map Type Control', 'GeoMashup').'</th>
+							<td><input id="add_map_type_control" name="add_map_type_control" type="checkbox" value="true"'.$mapTypeChecked.' /></td>
 						<tr>
 							<th scope="row">'.__('Default Map Type', 'GeoMashup').'</th>
 							<td>
@@ -183,23 +266,35 @@ class GeoMashup {
 						</tr>
 					</table>
 				</fieldset>
-				<div class="submit"><input type="submit" name="submit" value="'.__('Update Options', 'GeoMashup').'" /></div>
 				<fieldset>
-					<legend>' . __('Minimal Instructions') . '</legend>
-					<ol>
-						<li>Make sure you have the <a href="http://www.asymptomatic.net/wp-hacks">Geo Plugin</a> 
-						installed and at least one post with coordinates entered.</a></li>
-						<li>Get your Google Maps API key and enter it above.</li>
-						<li>Create a new page. Make sure the page slug matches the setting above.</li>
-						<li>Edit your page template so the body tag looks like this:
-							<code>&lt;body &lt;?php GeoMashup::body_attribute(); ?&gt;&gt;</code>
-						</li>
-						<li>View the page and play with your new blog map!</li>
-						<li>If nothing shows up, you may have to add <code>&lt;?php wp_head();?&gt;</code> in 
-							your page template header.</li>
-					</ol>
+					<legend>'.__('Presentation', 'GeoMashup').'</legend>
+					<table width="100%" cellspacing="2" cellpadding="5" class="editform">
+						<tr>
+							<th width="33%" scope="row">'.__('Use inline style', 'GeoMashup').'</th>
+							<td><input id="include_style" name="include_style" type="checkbox" value="true"'.$styleChecked.' />'.
+							__(' (Uncheck to use styles from your theme stylesheet instead of these)', 'GeoMashup').'</td>
+						</tr>
+						<tr>
+							<th scope="row">'.__('Map Width', 'GeoMashup').'</th>
+							<td><input id="map_width" name="map_width" type="text" size="5" value="'.$opts['map_width'].'" />px</td>
+						</tr>
+						<tr>
+							<th scope="row">'.__('Map Height', 'GeoMashup').'</th>
+							<td><input id="map_height" name="map_height" type="text" size="5" value="'.$opts['map_height'].'" />px</td>
+						</tr>
+						<tr>
+							<th scope="row">'.__('Info Window Width', 'GeoMashup').'</th>
+							<td><input id="info_window_width" name="info_window_width" type="text" size="5" value="'.$opts['info_window_width'].'" />px</td>
+						</tr>
+						<tr>
+							<th scope="row">'.__('Info Window Font Size', 'GeoMashup').'</th>
+							<td><input id="font_size" name="font_size" type="text" size="5" value="'.$opts['font_size'].'" />%</td>
+						</tr>
+					</table>
 				</fieldset>
+				<div class="submit"><input type="submit" name="submit" value="'.__('Update Options', 'GeoMashup').'" /></div>
 			</form>
+			<p><a href="http://dev.wp-plugins.org/wiki/GeoMashup">Geo Mashup Documentation</a></p>
 		</div>';
 	}
 
@@ -211,7 +306,7 @@ class GeoMashup {
 	function body_attribute() {
 		$opts = get_settings('geo_mashup_options');
 		if (is_page($opts['mashup_page'])) {
-			echo 'onload="GeoMashup.loadMap()"';
+			echo ' onload="GeoMashup.loadMap()"';
 	}
 }
 
@@ -226,7 +321,7 @@ class GeoMashup {
 	/**
 	 * A tag to insert a link to a post on the mashup.
 	 */
-	function post_link($text) {
+	function post_link($text = 'Geo Mashup') {
 		$lat = get_Lat();
 		$lon = get_Lon();
 		if ($lat && $lon) {
