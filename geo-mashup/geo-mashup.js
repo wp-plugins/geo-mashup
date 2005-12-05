@@ -44,7 +44,7 @@ GeoMashup.createMarker = function(point) {
 	var marker = new GMarker(point);
 
 	// Show this markers index in the info window when it is clicked
-	var xslt = this.linkDir + '/post.xslt';
+	var xslt = this.linkDir + '/post.xsl';
 	var url; 
 	GEvent.addListener(marker, "click", function() {
 		// The loading window is late to show up - may replace it 
@@ -77,7 +77,7 @@ GeoMashup.createMarker = function(point) {
 							channel.appendChild(newItem);
 						}
 						// Use a different stylesheet for multiple posts
-						xslt = GeoMashup.linkDir + '/posts.xslt';
+						xslt = GeoMashup.linkDir + '/posts.xsl';
 					} 
 					GeoMashup.locations[point].loaded[post_id] = true;
 				} // end if not loaded
