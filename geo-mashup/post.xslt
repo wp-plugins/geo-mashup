@@ -17,9 +17,11 @@
 			<h2><xsl:value-of select="substring(pubDate,1,16)" /></h2>
 		</div>
 		<div class="storycontent">
-			<xsl:value-of select="description" />
+			<p>
+			<xsl:value-of disable-output-escaping="yes" select="description" />
 			<br />
 			<a href="{link}" onclick="GeoMashup.setBackCookies()">Full Post</a>
+			</p>
 		</div>
 	</xsl:template>
 </xsl:stylesheet>
