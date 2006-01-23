@@ -25,7 +25,7 @@ if ($maxlon) {
 	$query_string .= " AND substring_index(meta_value,',',-1)<$maxlon";
 }
 
-$query_string .= " ORDER BY meta_id DESC";
+$query_string .= " ORDER BY post_id DESC";
 
 if (!($minlat && $maxlat && $minlon && $maxlon)) {
 	// limit is not geographic, so limit number of results

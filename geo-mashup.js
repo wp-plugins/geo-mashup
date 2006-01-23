@@ -86,7 +86,7 @@ GeoMashup.createMarker = function(point) {
 			marker.openInfoWindowXslt(GeoMashup.locations[point].xmlDoc,xslt);
 		} else {
 			// This foulness is required to unescape entities in Firefox
-			var divs = GeoMashup.container.getElementsByTagName("div");
+			var divs = GeoMashup.container.getElementsByTagName("p");
 			for(var i=0; i<divs.length; i++) {
 				if (divs[i].getAttribute("class") == "storycontent") {
 					while (divs[i].innerHTML.indexOf('\&amp;') >= 0) {
@@ -132,6 +132,19 @@ GeoMashup.loadMap = function() {
 		//	<marker post_id="1" lat="37.441" lon="-122.141"/>
 		//	<marker post_id="2" lat="37.322" lon="-121.213"/>
 		// </markers>
+		var zoomLevel = GeoMashup.map.getZoomLevel();
+		if (zoomLevel<=8 && !GeoMashup.showMarkers) {
+			for (point in GeoMashup.locations) {
+				GeoMashup.map.addOverlay(GeoMashup.locations[point].marker);
+			}
+			GeoMashup.showMarkers = true;
+		}
+		if (zoomLevel>8 && GeoMashup.showMarkers) {
+			GeoMashup.map.clearOverlays();
+			GeoMashup.map.addOverlay(GeoMashup.travelLine,'#ff0000',10,0.1);
+			GeoMashup.showMarkers = false;
+			alert("Markers will reappear if you zoom in again.");
+		}
 		var request = GXmlHttp.create();
 		var bounds = GeoMashup.map.getBoundsLatLng();
 		var url = GeoMashup.linkDir + '/geo-rss.php?minlat=' +
@@ -158,8 +171,10 @@ GeoMashup.loadMap = function() {
 							GeoMashup.locations[point].loaded = new Array();
 							GeoMashup.posts[post_id] = true;
 							var marker = GeoMashup.createMarker(point);
-							GeoMashup.map.addOverlay(marker);
 							GeoMashup.locations[point].marker = marker;
+							if (GeoMashup.showMarkers) {
+								GeoMashup.map.addOverlay(marker);
+							}
 						} else {
 							// There is already a marker at this point, add the new post to it
 							GeoMashup.locations[point].posts.push(post_id);
@@ -175,10 +190,29 @@ GeoMashup.loadMap = function() {
 		} // end onreadystatechange function
 		request.send(null);
 	});
-	
-	// Experimental - add WMS map types
-	// var tsdrg = new WMSSpec(this.map.mapTypes[0], "http://www.terraserver-usa.com/ogcmap6.ashx?", "Topo", "DRG", "", "image/jpeg");
-	// this.map.mapTypes.push(tsdrg);
+	// Add route
+	var routeReq = GXmlHttp.create();
+	var url = GeoMashup.linkDir + '/geo-query.php?limit=none';
+	routeReq.open("GET", url, true);
+	routeReq.onreadystatechange = function() {
+		if (routeReq.readyState == 4) {
+			var xmlDoc = routeReq.responseXML;
+			var markers = xmlDoc.getElementsByTagName("marker");
+			var points = Array();
+			for (var i = 0; i < markers.length; i++) {
+				points.push(new GPoint(
+					parseFloat(markers[i].getAttribute("lon")),
+					parseFloat(markers[i].getAttribute("lat"))));
+			} // end for each marker
+			GeoMashup.travelLine = new GPolyline(points);
+			GeoMashup.map.addOverlay(GeoMashup.travelLine,'#ff0000',10,0.1);
+		} // end readystate == 4
+	} // end onreadystatechange function
+	routeReq.send(null);
+
+	// Add topo map type
+	var tsdrg = new WMSSpec(this.map.mapTypes[0], "http://www.terraserver-usa.com/ogcmap6.ashx?", "Topo", "DRG", "", "image/jpeg");
+	this.map.mapTypes.push(tsdrg);
 
 	if (!this.loadLat && !this.loadLon) {
 		// look for load settings in cookies
@@ -194,6 +228,12 @@ GeoMashup.loadMap = function() {
 	} else {
 		this.loadZoom = 5;
 	}
+	if (this.loadZoom <= 6) {
+		this.showMarkers = true;
+	} else {
+		this.showMarkers = false;
+	}
+
 	// Use default map type if appropriate
 	if (!this.loadType && this.defaultMapType) {
 		this.loadType = this.defaultMapType;
