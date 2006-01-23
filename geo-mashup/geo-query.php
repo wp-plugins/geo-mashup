@@ -7,7 +7,7 @@ echo '<?xml version="1.0" encoding="'.get_settings('blog_charset').'"?'.'>'."\n"
 echo "<markers>\n";
 
 // Construct the query string.
-$query_string = 'SELECT meta.post_id, meta_value'.
+$query_string = 'SELECT post_id, meta_value'.
 	' FROM '.$wpdb->postmeta.
 	' WHERE meta_key=\'_geo_location\''.
 	' AND length(meta_value)>1';
