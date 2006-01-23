@@ -42,11 +42,42 @@ class GeoMashup {
 		$linkDir = get_bloginfo('wpurl')."/wp-content/plugins/geo-mashup";
 		if ($opts['google_key']) {
 			// Generate the mashup javascript
-			// echo '<script type="text/javascript" src="'.$linkDir.'/GMaps_WMSSpec_0.5.js"></script>';
+			if ($opts['include_style'] == 'true') {
+				// Generate map style
+				echo '
+				<style type="text/css">
+				v\:* {
+					behavior:url(#default#VML);
+				}
+				#geoMashup {';
+				if ($opts['map_width']) {
+					echo '
+					width:'.$opts['map_width'].'px;';
+				}
+				if ($opts['map_height']) {
+					echo '
+					height:'.$opts['map_height'].'px;';
+				}
+				echo '
+				}
+				.locationinfo {';
+				if ($opts['info_window_width']) {
+					echo '
+					width:'.$opts['info_window_width'].'px;';
+				}
+				if ($opts['font_size']) {
+					echo '
+					font-size:'.$opts['font_size'].'%;';
+				}
+				echo '
+				}
+				</style>';
+			}
 			echo '
 			<script src="http://maps.google.com/maps?file=api&amp;v=1&amp;key='.$opts['google_key'].'" type="text/javascript"></script>
 			<script type="text/javascript" src="'.$linkDir.'/geo-mashup.js"></script>
 			<script type="text/javascript">
+			  //<![CDATA[
 				GeoMashup.linkDir = "'.$linkDir.'";
 				GeoMashup.rssUri = "'.get_bloginfo('wpurl').'/wp-rss2.php";
 				GeoMashup.mapControl = "'.$opts['map_control'].'";';
@@ -73,37 +104,8 @@ class GeoMashup {
 				GeoMashup.loadZoom = '.$_GET['zoom'].';';
 			}
 			echo '
+				//]]>
 			</script>';
-
-			if ($opts['include_style'] == 'true') {
-				// Generate map style
-				echo '
-				<style type="text/css">
-				#geoMashup {';
-				if ($opts['map_width']) {
-					echo '
-					width:'.$opts['map_width'].'px;';
-				}
-				if ($opts['map_height']) {
-					echo '
-					height:'.$opts['map_height'].'px;';
-				}
-				echo '
-				}
-				.locationinfo {';
-
-				if ($opts['info_window_width']) {
-					echo '
-					width:'.$opts['info_window_width'].'px;';
-				}
-				if ($opts['font_size']) {
-					echo '
-					font-size:'.$opts['font_size'].'%;';
-				}
-				echo '
-				}
-				</style>';
-			}
 		}
 	}
 
