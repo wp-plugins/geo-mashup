@@ -86,7 +86,7 @@ GeoMashup.createMarker = function(point) {
 			marker.openInfoWindowXslt(GeoMashup.locations[point].xmlDoc,xslt);
 		} else {
 			// This foulness is required to unescape entities in Firefox
-			var divs = GeoMashup.container.getElementsByTagName("div");
+			var divs = GeoMashup.container.getElementsByTagName("p");
 			for(var i=0; i<divs.length; i++) {
 				if (divs[i].getAttribute("class") == "storycontent") {
 					while (divs[i].innerHTML.indexOf('\&amp;') >= 0) {
@@ -134,7 +134,7 @@ GeoMashup.loadMap = function() {
 		// </markers>
 		var request = GXmlHttp.create();
 		var bounds = GeoMashup.map.getBoundsLatLng();
-		var url = GeoMashup.linkDir + '/geo-rss.php?minlat=' +
+		var url = GeoMashup.linkDir + '/geo-query.php?minlat=' +
 			bounds.minY + '&minlon=' + bounds.minX + '&maxlat=' +
 			bounds.maxY + '&maxlon=' + bounds.maxX;
 		request.open("GET", url, true);
@@ -158,8 +158,8 @@ GeoMashup.loadMap = function() {
 							GeoMashup.locations[point].loaded = new Array();
 							GeoMashup.posts[post_id] = true;
 							var marker = GeoMashup.createMarker(point);
-							GeoMashup.map.addOverlay(marker);
 							GeoMashup.locations[point].marker = marker;
+							GeoMashup.map.addOverlay(marker);
 						} else {
 							// There is already a marker at this point, add the new post to it
 							GeoMashup.locations[point].posts.push(post_id);
@@ -175,10 +175,6 @@ GeoMashup.loadMap = function() {
 		} // end onreadystatechange function
 		request.send(null);
 	});
-	
-	// Experimental - add WMS map types
-	// var tsdrg = new WMSSpec(this.map.mapTypes[0], "http://www.terraserver-usa.com/ogcmap6.ashx?", "Topo", "DRG", "", "image/jpeg");
-	// this.map.mapTypes.push(tsdrg);
 
 	if (!this.loadLat && !this.loadLon) {
 		// look for load settings in cookies
@@ -205,7 +201,7 @@ GeoMashup.loadMap = function() {
 	} else {
 		// Center the map on the most recent geo-tagged post
 		var request = GXmlHttp.create();
-		var url = this.linkDir + '/geo-rss.php';
+		var url = this.linkDir + '/geo-query.php';
 		request.open("GET", url, false);
 		request.send(null);
 		var xmlDoc = request.responseXML;
