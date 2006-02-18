@@ -39,7 +39,7 @@ class GeoMashup {
 			return;
 		}
 
-		$linkDir = get_bloginfo('wpurl')."/wp-content/plugins/geo-mashup";
+		$linkDir = get_bloginfo('url')."/wp-content/plugins/geo-mashup";
 		if ($opts['google_key']) {
 			// Generate the mashup javascript
 			if ($opts['include_style'] == 'true') {
@@ -79,7 +79,7 @@ class GeoMashup {
 			<script type="text/javascript">
 			  //<![CDATA[
 				GeoMashup.linkDir = "'.$linkDir.'";
-				GeoMashup.rssUri = "'.get_bloginfo('wpurl').'/wp-rss2.php";
+				GeoMashup.rssUri = "'.get_bloginfo('url').'/wp-rss2.php";
 				GeoMashup.mapControl = "'.$opts['map_control'].'";';
 			if ($opts['add_map_type_control'] == 'true') {
 				echo '
@@ -116,7 +116,7 @@ class GeoMashup {
 			if (!$opts['google_key']) {
 				$mapdiv .= '<p>The Google Mashup plugin needs a 
 					<a href="http://maps.google.com/apis/maps/signup.html">Google API Key</a> set
-					in the <a href="'.get_bloginfo('wpurl').'/wp-admin/options-general.php?page=geo-mashup/geo-mashup.php">
+					in the <a href="'.get_bloginfo('url').'/wp-admin/options-general.php?page=geo-mashup/geo-mashup.php">
 					plugin options</a> before it will work.</p>';
 			}
 			$mapdiv .= '</div>';
@@ -334,7 +334,7 @@ class GeoMashup {
 		$lon = get_Lon();
 		if ($lat && $lon) {
 			$opts = get_settings('geo_mashup_options');
-			echo '<a href="'.get_bloginfo('wpurl').'/'.$opts['mashup_page']."?lat=$lat&lon=$lon\">$text</a>";
+			echo '<a href="'.get_bloginfo('url').'/'.$opts['mashup_page']."?lat=$lat&lon=$lon\">$text</a>";
 		}
 	}
 } // class GeoMashup
