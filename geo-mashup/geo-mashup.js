@@ -89,7 +89,7 @@ GeoMashup.createMarker = function(point) {
 			var divs = GeoMashup.container.getElementsByTagName("p");
 			for(var i=0; i<divs.length; i++) {
 				if (divs[i].getAttribute("class") == "storycontent") {
-					while (divs[i].innerHTML.indexOf('\&amp;') >= 0) {
+					while (divs[i].innerHTML.indexOf('\&amp;#') >= 0) {
 						divs[i].innerHTML = divs[i].innerHTML.replace(/&amp;/,'\&');
 					}
 				}
