@@ -334,7 +334,12 @@ class GeoMashup {
 		$lon = get_Lon();
 		if ($lat && $lon) {
 			$opts = get_settings('geo_mashup_options');
-			echo '<a href="'.get_bloginfo('url').'/'.$opts['mashup_page']."?lat=$lat&lon=$lon\">$text</a>";
+			$using_pretty_links = get_settings('permalink_structure');
+			if ($using_pretty_links) {
+				echo '<a href="'.get_bloginfo('url').'/'.$opts['mashup_page']."?lat=$lat&lon=$lon\">$text</a>";
+			} else {
+				echo '<a href="'.get_bloginfo('url').'?pagename='.$opts['mashup_page']."&lat=$lat&lon=$lon\">$text</a>";
+			}
 		}
 	}
 } // class GeoMashup
