@@ -49,7 +49,7 @@ GeoMashup.delCookie = function(NameOfCookie) {
 GeoMashup.renderRss = function (rss_doc) {
 	var items = rss_doc.getElementsByTagName('item');
 	if (items.length == 0) return false;
-	var html = [];
+	var html = ['<div class="locationinfo">'];
 		
 	for (var i=0; i<items.length; i++) {
 		var link = items[i].getElementsByTagName('link')[0].firstChild.nodeValue;
@@ -68,11 +68,12 @@ GeoMashup.renderRss = function (rss_doc) {
 			'</p>']);
 		if (items.length == 1) {
 			html = html.concat(['<p class="storycontent">',
-				items[i].getElementsByTagName('description')[0].firstChild.nodeValue,
+				items[i].getElementsByTagName('description')[0].firstChild.nodeValue.replace('[...]',''),
 				'<a href="',url,'" onclick="',onclick,'">[...]</a></p>']);
 			if (this.showPostHere) { this.showPost(link); }
 		}
 	} 
+	html.push('</div>');
 	return html.join('');
 }
 
