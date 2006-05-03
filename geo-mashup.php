@@ -46,9 +46,6 @@ class GeoMashup {
 				// Generate map style
 				echo '
 				<style type="text/css">
-				v\:* {
-					behavior:url(#default#VML);
-				}
 				#geoMashup {';
 				if ($opts['map_width']) {
 					echo '
@@ -74,7 +71,7 @@ class GeoMashup {
 				</style>';
 			}
 			echo '
-			<script src="http://maps.google.com/maps?file=api&amp;v=1&amp;key='.$opts['google_key'].'" type="text/javascript"></script>
+			<script src="http://maps.google.com/maps?file=api&amp;v=2&amp;key='.$opts['google_key'].'" type="text/javascript"></script>
 			<script type="text/javascript" src="'.$linkDir.'/geo-mashup.js"></script>
 			<script type="text/javascript">
 			  //<![CDATA[
@@ -85,6 +82,10 @@ class GeoMashup {
 				echo '
 				GeoMashup.addMapTypeControl = true;';
 			}
+			if ($opts['add_overview_control'] == 'true') {
+				echo '
+				GeoMashup.addOverviewControl = true;';
+			}
 			if ($opts['map_type']) {
 				echo '
 				GeoMashup.defaultMapType = '.$opts['map_type'].';';
@@ -92,6 +93,10 @@ class GeoMashup {
 			if ($opts['zoom_level']) {
 				echo '
 				GeoMashup.defaultZoom = '.$opts['zoom_level'].';';
+			}
+			if ($opts['show_post'] == 'true') {
+				echo '
+				GeoMashup.showPostHere = '.$opts['show_post'].';';
 			}
 			if ($_GET['lat'] && $_GET['lon']) {
 				echo '
@@ -120,8 +125,14 @@ class GeoMashup {
 					plugin options</a> before it will work.</p>';
 			}
 			$mapdiv .= '</div>';
+			$postdiv = '';
+			if ($opts['show_post'] == 'true') {
+				$postdiv = '<div id="geoPost"></div>';
+			}
+
 			if ($content) {
 				$content = preg_replace('/<\!--\s*Geo.?Mashup\s*-->/i',$mapdiv,$content);
+				$content = preg_replace('/<\!--\s*Geo.?Post\s*-->/i',$postdiv,$content);
 			} else {
 				$content = $mapdiv;
 			}
@@ -160,6 +171,8 @@ class GeoMashup {
 			// Process option updates
 			$opts['include_style'] = 'false';
 			$opts['add_map_type_control'] = 'false';
+			$opts['add_overview_control'] = 'false';
+			$opts['show_post'] = 'false';
 			foreach($_POST as $name => $value) {
 				$opts[$name] = $value;
 			}
@@ -198,9 +211,9 @@ class GeoMashup {
 
 		$mapTypeOptions = "";
 		$mapTypes = Array(
-			'G_MAP_TYPE' => 'Roadmap',
-			'G_SATELLITE_TYPE' => 'Satellite',
-			'G_HYBRID_TYPE' => 'Hybrid');
+			'G_NORMAL_MAP' => 'Roadmap',
+			'G_SATELLITE_MAP' => 'Satellite',
+			'G_HYBRID_MAP' => 'Hybrid');
 		foreach($mapTypes as $type => $label) {
 			$selected = "";
 			if ($type == $opts['map_type']) {
@@ -232,6 +245,18 @@ class GeoMashup {
 		} else {
 			$mapTypeChecked = '';
 		}
+
+		if ($opts['add_overview_control'] == 'true') {
+			$overviewChecked = ' checked="true"';
+		} else {
+			$overviewmapChecked = '';
+		}
+
+		if ($opts['show_post'] == 'true') {
+			$showPostChecked = ' checked="true"';
+		} else {
+			$showPostChecked = '';
+		}
 		
 		// Write the form
 		echo '
@@ -261,6 +286,11 @@ class GeoMashup {
 						<tr>
 							<th scope="row">'.__('Add Map Type Control', 'GeoMashup').'</th>
 							<td><input id="add_map_type_control" name="add_map_type_control" type="checkbox" value="true"'.$mapTypeChecked.' /></td>
+						</tr>
+						<tr>
+							<th scope="row">'.__('Add Overview Control', 'GeoMashup').'</th>
+							<td><input id="add_overview_control" name="add_overview_control" type="checkbox" value="true"'.$overviewChecked.' /></td>
+						</tr>
 						<tr>
 							<th scope="row">'.__('Default Map Type', 'GeoMashup').'</th>
 							<td>
@@ -272,13 +302,17 @@ class GeoMashup {
 							<td><input id="zoom_level" name="zoom_level" type="text" size="2" value="'.$opts['zoom_level'].'" />'.
 							__('0-17', 'GeoMashup').'</td>
 						</tr>
+						<tr>
+							<th scope="row">'.__('Enable Full Post Display', 'GeoMashup').'</th>
+							<td><input id="show_post" name="show_post" type="checkbox" value="true"'.$showPostChecked.' /></td>
+						</tr>
 					</table>
 				</fieldset>
 				<fieldset>
 					<legend>'.__('Presentation', 'GeoMashup').'</legend>
 					<table width="100%" cellspacing="2" cellpadding="5" class="editform">
 						<tr>
-							<th width="33%" scope="row">'.__('Use inline style', 'GeoMashup').'</th>
+							<th width="33%" scope="row">'.__('Include style settings', 'GeoMashup').'</th>
 							<td><input id="include_style" name="include_style" type="checkbox" value="true"'.$styleChecked.' />'.
 							__(' (Uncheck to use styles from your theme stylesheet instead of these)', 'GeoMashup').'</td>
 						</tr>
