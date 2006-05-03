@@ -1,11 +1,18 @@
-/**
-* The hobomap Google maps mashup
-* 
-* Experimental code by Dylan Kuhn, http://www.cyberhobo.net/
-* 
-* Feel free to gank this code, but please give me credit and 
-* a link if you find it useful. I will probably package it in 
-* a more useful form at some point.
+/*
+Geo Mashup - Adds a Google Maps mashup of blog posts geocoded with the Geo plugin. 
+Copyright (c) 2005 Dylan Kuhn
+
+This program is free software; you can redistribute it
+and/or modify it under the terms of the GNU General Public
+License as published by the Free Software Foundation;
+either version 2 of the License, or (at your option) any
+later version.
+
+This program is distributed in the hope that it will be
+useful, but WITHOUT ANY WARRANTY; without even the implied
+warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+PURPOSE. See the GNU General Public License for more
+details.
 */
 
 function GeoMashup() {}
@@ -20,7 +27,7 @@ GeoMashup.getCookie = function(NameOfCookie) {
 		var begin = document.cookie.indexOf(NameOfCookie+"=");
 		if (begin != -1) { 
 			begin += NameOfCookie.length+1;
-			end = document.cookie.indexOf(";", begin);
+			var end = document.cookie.indexOf(";", begin);
 			if (end == -1) end = document.cookie.length;
 			return unescape(document.cookie.substring(begin, end)); 
 		}
@@ -39,13 +46,68 @@ GeoMashup.delCookie = function(NameOfCookie) {
 	}
 }
 
+GeoMashup.renderRss = function (rss_doc) {
+	var items = rss_doc.getElementsByTagName('item');
+	if (items.length == 0) return false;
+	var html = [];
+		
+	for (var i=0; i<items.length; i++) {
+		var link = items[i].getElementsByTagName('link')[0].firstChild.nodeValue;
+		var url = link;
+		var onclick = 'GeoMashup.setBackCookies()';
+		if (this.showPostHere) {
+			onclick = 'GeoMashup.showPost(\''+url+'\')';
+			url = '#geoPost';
+		}
+		html = html.concat(['<h2><a href="', url, '" onclick="', onclick, '">',
+			items[i].getElementsByTagName('title')[0].firstChild.nodeValue,
+			'</a></h2><p class="meta"><span class="blogdate">',
+			items[i].getElementsByTagName('pubDate')[0].firstChild.nodeValue.substr(0,16),
+			'</span>, ',
+			items[i].getElementsByTagName('category')[0].firstChild.nodeValue,
+			'</p>']);
+		if (items.length == 1) {
+			html = html.concat(['<p class="storycontent">',
+				items[i].getElementsByTagName('description')[0].firstChild.nodeValue,
+				'<a href="',url,'" onclick="',onclick,'">[...]</a></p>']);
+			if (this.showPostHere) { this.showPost(link); }
+		}
+	} 
+	return html.join('');
+}
+
+GeoMashup.showPost = function (url) {
+	if (this.showing_url == url) {
+		return false;
+	}
+	this.showing_url = url;
+	var request = new GXmlHttp.create();
+	var geoPost = document.getElementById('geoPost');
+	if (geoPost.firstChild) {
+		geoPost.removeChild(geoPost.firstChild);
+	}
+	request.open('GET',url,true);
+	request.onreadystatechange = function() {
+		if (request.readyState == 4 && request.status == 200) {
+			var node = document.createElement('div');
+			node.innerHTML = request.responseText;
+			var divs = node.getElementsByTagName('div');
+			for (var i=0; i<divs.length; i++) {
+				if (divs[i].className=='post') { 
+					geoPost.appendChild(divs[i]);
+					break;
+				}
+			}
+		}
+	}
+	request.send(null);
+}
+
 // Create a marker whose info window displays the given number
 GeoMashup.createMarker = function(point) {
 	var marker = new GMarker(point);
 
 	// Show this markers index in the info window when it is clicked
-	var xslt = this.linkDir + '/post.xsl';
-	var url; 
 	GEvent.addListener(marker, "click", function() {
 		// The loading window is late to show up - may replace it 
 		// with a message div 
@@ -63,7 +125,7 @@ GeoMashup.createMarker = function(point) {
 					// The post RSS XML has not been loaded yet, request it
 					var url = GeoMashup.rssUri + '?p=' + post_id;
 					// Use a synchronous request to simplify multiple posts at a location
-					request.open("GET", url, false);
+					request.open('GET', url, false);
 					request.send(null);
 					var xmlDoc = request.responseXML;
 					if (!GeoMashup.locations[point].xmlDoc) {
@@ -76,27 +138,23 @@ GeoMashup.createMarker = function(point) {
 						if (channel && newItem) {
 							channel.appendChild(newItem);
 						}
-						// Use a different stylesheet for multiple posts
-						xslt = GeoMashup.linkDir + '/posts.xsl';
 					} 
 					GeoMashup.locations[point].loaded[post_id] = true;
 				} // end if not loaded
 			} // end location posts loop
 			GeoMashup.loading = false;
-			marker.openInfoWindowXslt(GeoMashup.locations[point].xmlDoc,xslt);
-		} else {
-			// This foulness is required to unescape entities in Firefox
-			var divs = GeoMashup.container.getElementsByTagName("p");
-			for(var i=0; i<divs.length; i++) {
-				if (divs[i].getAttribute("class") == "storycontent") {
-					while (divs[i].innerHTML.indexOf('\&amp;#') >= 0) {
-						divs[i].innerHTML = divs[i].innerHTML.replace(/&amp;/,'\&');
-					}
-				}
-			}
+			var html = GeoMashup.renderRss(GeoMashup.locations[point].xmlDoc);
+			marker.openInfoWindowHtml(html);
+		} 
+	}); // end marker infowindowopen
 
+	GEvent.addListener(marker, 'infowindowclose', function() {
+		var geoPost = document.getElementById('geoPost');
+		if (geoPost && geoPost.firstChild) {
+			geoPost.removeChild(geoPost.firstChild);
+			GeoMashup.showing_url = '';
 		}
-	}); // end marker listener
+	});
 
 	return marker;
 }
@@ -115,7 +173,7 @@ GeoMashup.checkDependencies = function () {
 
 GeoMashup.clickCenterMarker = function() {
   // If there's a marker at the center, click it
-	var center = this.map.getCenterLatLng();
+	var center = this.map.getCenter();
 	if (this.locations[center]) {
 		GEvent.trigger(this.locations[center].marker,"click");
 	}
@@ -124,7 +182,7 @@ GeoMashup.clickCenterMarker = function() {
 GeoMashup.loadMap = function() {
 	this.container = document.getElementById("geoMashup");
 	this.checkDependencies();
-	this.map = new GMap(this.container);
+	this.map = new GMap2(this.container);
 	GEvent.addListener(this.map, "moveend", function() {
 		// Download markers from the blog and load it on the map. The format we
 		// expect is:
@@ -133,10 +191,10 @@ GeoMashup.loadMap = function() {
 		//	<marker post_id="2" lat="37.322" lon="-121.213"/>
 		// </markers>
 		var request = GXmlHttp.create();
-		var bounds = GeoMashup.map.getBoundsLatLng();
+		var bounds = GeoMashup.map.getBounds();
 		var url = GeoMashup.linkDir + '/geo-query.php?minlat=' +
-			bounds.minY + '&minlon=' + bounds.minX + '&maxlat=' +
-			bounds.maxY + '&maxlon=' + bounds.maxX;
+			bounds.getSouthWest().lat() + '&minlon=' + bounds.getSouthWest().lng() + '&maxlat=' +
+			bounds.getNorthEast().lat() + '&maxlon=' + bounds.getNorthEast().lng();
 		request.open("GET", url, true);
 		request.onreadystatechange = function() {
 			if (request.readyState == 4) {
@@ -147,9 +205,9 @@ GeoMashup.loadMap = function() {
 					var post_id = markers[i].getAttribute("post_id");
 					if (!GeoMashup.posts[post_id]) {
 						// This post has not yet been loaded
-						var point = new GPoint(
-							parseFloat(markers[i].getAttribute("lon")),
-							parseFloat(markers[i].getAttribute("lat")));
+						var point = new GLatLng(
+							parseFloat(markers[i].getAttribute("lat")),
+							parseFloat(markers[i].getAttribute("lon")));
 						if (!GeoMashup.locations[point]) {
 							// There are no other posts yet at this point, create a marker
 							GeoMashup.locations[point] = new Object();
@@ -176,6 +234,7 @@ GeoMashup.loadMap = function() {
 		request.send(null);
 	});
 
+	this.loadType = G_NORMAL_MAP;
 	if (!this.loadLat && !this.loadLon) {
 		// look for load settings in cookies
 		this.loadLat = this.getCookie("loadLat");
@@ -197,7 +256,7 @@ GeoMashup.loadMap = function() {
 
 	if (this.loadLat && this.loadLon && this.loadZoom) {
 		// Center on the last clicked marker
-		this.map.centerAndZoom(new GPoint(this.loadLon, this.loadLat), this.loadZoom);
+		this.map.setCenter(new GLatLng(this.loadLat, this.loadLon), this.loadZoom, this.loadType);
 	} else {
 		// Center the map on the most recent geo-tagged post
 		var request = GXmlHttp.create();
@@ -207,10 +266,10 @@ GeoMashup.loadMap = function() {
 		var xmlDoc = request.responseXML;
 		var markers = xmlDoc.getElementsByTagName("marker");
 		if (markers.length>0) {
-			var point = new GPoint(
-				parseFloat(markers[0].getAttribute("lon")),
-				parseFloat(markers[0].getAttribute("lat")));
-			this.map.centerAndZoom(point,this.loadZoom);
+			var point = new GLatLng(
+				parseFloat(markers[0].getAttribute("lat")),
+				parseFloat(markers[0].getAttribute("lon")));
+			this.map.setCenter(point,this.loadZoom,this.loadType);
 		}
 	}
 
@@ -226,24 +285,31 @@ GeoMashup.loadMap = function() {
 	if (this.addMapTypeControl) {
 		this.map.addControl(new GMapTypeControl());
 	}
-	if (this.loadType) {
-		this.map.setMapType(this.loadType);
+
+	if (this.addOverviewControl) {
+		this.map.addControl(new GOverviewMapControl());
+		var ov = document.getElementById('geoMashup_overview');
+		if (ov) {
+			ov.style.position = 'absolute';
+			this.container.appendChild(ov);
+		}
 	}
+
 } // end loadMap();
 	
 GeoMashup.setBackCookies = function() {
 	// so when a post link is clicked you can go back to the spot
 	// you left on the map
-	var center = this.map.getCenterLatLng();
+	var center = this.map.getCenter();
   var mapTypeNum = 0;
   for(var ix=0; ix<this.map.getMapTypes().length; ix++){
     if(this.map.getMapTypes()[ix]==this.map.getCurrentMapType())
       mapTypeNum=ix;
 	}
 	this.setCookie("loadType",mapTypeNum);
-	this.setCookie("loadLon",center.x);
-	this.setCookie("loadLat",center.y);
-	this.setCookie("loadZoom",this.map.getZoomLevel());
+	this.setCookie("loadLat",center.lat());
+	this.setCookie("loadLon",center.lng());
+	this.setCookie("loadZoom",this.map.getZoom());
 	return true;
 }
 
