@@ -3,7 +3,7 @@
 Plugin Name: Geo Mashup
 Plugin URI: http://www.cyberhobo.net/downloads/geo-mashup-plugin/
 Description: Adds a Google Maps mashup of blog posts geocoded with the Geo plugin. For WordPress 1.5.1 or higher. Minimal instructions and configuration will be in <a href="options-general.php?page=geo-mashup/geo-mashup.php">Options->Geo Mashup</a> after the plugin is activated.
-Version: 0.3 Beta
+Version: 0.4 
 Author: Dylan Kuhn
 Author URI: http://www.cyberhobo.net/
 Minimum WordPress Version Required: 1.5.1
@@ -57,7 +57,12 @@ class GeoMashup {
 				}
 				echo '
 				}
-				.locationinfo {';
+				.locationinfo {
+					overflow:auto;';
+				if ($opts['info_window_height']) {
+					echo '
+					height:'.$opts['info_window_height'].'px;';
+				}
 				if ($opts['info_window_width']) {
 					echo '
 					width:'.$opts['info_window_width'].'px;';
@@ -186,6 +191,7 @@ class GeoMashup {
 			$opts['map_width'] = '400';
 			$opts['map_height'] = '500';
 			$opts['info_window_width'] = '300';
+			$opts['info_window_height'] = '175';
 			$opts['font_size'] = '75';
 			if (!isset($opts['map_control'])) {
 				$opts['map_control'] = 'GSmallMapControl';
@@ -327,6 +333,10 @@ class GeoMashup {
 						<tr>
 							<th scope="row">'.__('Info Window Width', 'GeoMashup').'</th>
 							<td><input id="info_window_width" name="info_window_width" type="text" size="5" value="'.$opts['info_window_width'].'" />px</td>
+						</tr>
+						<tr>
+							<th scope="row">'.__('Info Window Height', 'GeoMashup').'</th>
+							<td><input id="info_window_height" name="info_window_height" type="text" size="5" value="'.$opts['info_window_height'].'" />px</td>
 						</tr>
 						<tr>
 							<th scope="row">'.__('Info Window Font Size', 'GeoMashup').'</th>
