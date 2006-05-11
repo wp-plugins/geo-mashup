@@ -81,7 +81,6 @@ class GeoMashup {
 			<script type="text/javascript">
 			  //<![CDATA[
 				GeoMashup.linkDir = "'.$linkDir.'";
-				GeoMashup.rssUri = "'.get_bloginfo('url').'/wp-rss2.php";
 				GeoMashup.mapControl = "'.$opts['map_control'].'";';
 			if ($opts['add_map_type_control'] == 'true') {
 				echo '

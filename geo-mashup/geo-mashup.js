@@ -46,29 +46,45 @@ GeoMashup.delCookie = function(NameOfCookie) {
 	}
 }
 
+GeoMashup.getTagContent = function (parent, tag, default_value) {
+	if (!default_value) {
+		default_value = '';
+	}
+	var children = parent.getElementsByTagName(tag);
+	if (children.length > 0) {
+		return children[0].firstChild.nodeValue;
+	} else {
+		return default_value;
+	}
+}
+
 GeoMashup.renderRss = function (rss_doc) {
 	var items = rss_doc.getElementsByTagName('item');
 	if (items.length == 0) return false;
 	var html = ['<div class="locationinfo">'];
 		
 	for (var i=0; i<items.length; i++) {
-		var link = items[i].getElementsByTagName('link')[0].firstChild.nodeValue;
+		var link = this.getTagContent(items[i],'link');
 		var url = link;
 		var onclick = 'GeoMashup.setBackCookies()';
 		if (this.showPostHere) {
 			onclick = 'GeoMashup.showPost(\''+url+'\')';
 			url = '#geoPost';
 		}
+		var title = this.getTagContent(items[i],'title','-');
+		var pubDate = this.getTagContent(items[i],'pubDate','-').substr(0,16);
+		var tags = [];
+		var categories = items[i].getElementsByTagName('category');
+		for (var j=0; j<categories.length; j++) {
+			tags.push(categories[j].firstChild.nodeValue);
+		}
 		html = html.concat(['<h2><a href="', url, '" onclick="', onclick, '">',
-			items[i].getElementsByTagName('title')[0].firstChild.nodeValue,
-			'</a></h2><p class="meta"><span class="blogdate">',
-			items[i].getElementsByTagName('pubDate')[0].firstChild.nodeValue.substr(0,16),
-			'</span>, ',
-			items[i].getElementsByTagName('category')[0].firstChild.nodeValue,
+			title,'</a></h2><p class="meta"><span class="blogdate">',pubDate,'</span>, ',
+			tags.join(' '),
 			'</p>']);
 		if (items.length == 1) {
-			html = html.concat(['<p class="storycontent">',
-				items[i].getElementsByTagName('description')[0].firstChild.nodeValue.replace('[...]',''),
+			var desc = this.getTagContent(items[i],'description').replace('[...]','');
+			html = html.concat(['<p class="storycontent">',desc,
 				'<a href="',url,'" onclick="',onclick,'">[...]</a></p>']);
 			if (this.showPostHere) { this.showPost(link); }
 		}
@@ -81,9 +97,13 @@ GeoMashup.showPost = function (url) {
 	if (this.showing_url == url) {
 		return false;
 	}
+	var geoPost = document.getElementById('geoPost');
+	if (!geoPost) {
+		this.showPostHere = false;
+		return false;
+	}
 	this.showing_url = url;
 	var request = new GXmlHttp.create();
-	var geoPost = document.getElementById('geoPost');
 	if (geoPost.firstChild) {
 		geoPost.removeChild(geoPost.firstChild);
 	}
@@ -124,23 +144,27 @@ GeoMashup.createMarker = function(point) {
 				var post_id = GeoMashup.locations[point].posts[i];
 				if (!GeoMashup.locations[point].loaded[post_id]) {
 					// The post RSS XML has not been loaded yet, request it
-					var url = GeoMashup.rssUri + '?p=' + post_id;
+					var url = GeoMashup.linkDir + '/geo-query.php?post_id=' + post_id;
 					// Use a synchronous request to simplify multiple posts at a location
 					request.open('GET', url, false);
-					request.send(null);
-					var xmlDoc = request.responseXML;
-					if (!GeoMashup.locations[point].xmlDoc) {
-						// This is the only post, use the XML as it is
-						GeoMashup.locations[point].xmlDoc = xmlDoc;
-					} else {
-						// There are multiple posts here, append this one to the others
-						var newItem = xmlDoc.getElementsByTagName("item")[0];
-						var channel = GeoMashup.locations[point].xmlDoc.getElementsByTagName("channel")[0];
-						if (channel && newItem) {
-							channel.appendChild(newItem);
-						}
-					} 
-					GeoMashup.locations[point].loaded[post_id] = true;
+					try {
+						request.send(null);
+						var xmlDoc = request.responseXML;
+						if (!GeoMashup.locations[point].xmlDoc) {
+							// This is the only post, use the XML as it is
+							GeoMashup.locations[point].xmlDoc = xmlDoc;
+						} else {
+							// There are multiple posts here, append this one to the others
+							var newItem = xmlDoc.getElementsByTagName("item")[0];
+							var channel = GeoMashup.locations[point].xmlDoc.getElementsByTagName("channel")[0];
+							if (channel && newItem) {
+								channel.appendChild(newItem);
+							}
+						} 
+						GeoMashup.locations[point].loaded[post_id] = true;
+					} catch (e) {
+						alert('Request for post ' + post_id + ' failed: ' + e);
+					}
 				} // end if not loaded
 			} // end location posts loop
 			GeoMashup.loading = false;
@@ -182,6 +206,7 @@ GeoMashup.clickCenterMarker = function() {
 
 GeoMashup.loadMap = function() {
 	this.container = document.getElementById("geoMashup");
+	this.showing_url = '';
 	this.checkDependencies();
 	this.map = new GMap2(this.container);
 	GEvent.addListener(this.map, "moveend", function() {
@@ -235,7 +260,6 @@ GeoMashup.loadMap = function() {
 		request.send(null);
 	});
 
-	this.loadType = G_NORMAL_MAP;
 	if (!this.loadLat && !this.loadLon) {
 		// look for load settings in cookies
 		this.loadLat = this.getCookie("loadLat");
@@ -245,14 +269,20 @@ GeoMashup.loadMap = function() {
 		this.loadType = this.map.getMapTypes()[mapTypeNum];
 	}
 	// Use default zoom level if appropriate
-	if (!this.loadZoom && this.defaultZoom) {
-		this.loadZoom = this.defaultZoom;
-	} else {
-		this.loadZoom = 5;
+	if (!this.loadZoom) {
+		if (this.defaultZoom) {
+			this.loadZoom = this.defaultZoom;
+		} else {
+			this.loadZoom = 5;
+		}
 	}
 	// Use default map type if appropriate
-	if (!this.loadType && this.defaultMapType) {
-		this.loadType = this.defaultMapType;
+	if (!this.loadType) {
+		if (this.defaultMapType) {
+			this.loadType = this.defaultMapType;
+		} else {
+			this.loadType = G_NORMAL_MAP;
+		}
 	} 
 
 	if (this.loadLat && this.loadLon && this.loadZoom) {
