@@ -165,6 +165,9 @@ class GeoMashup {
 			<div class="wrap">
 				<p>The <a href="http://dev.wp-plugins.org/wiki/GeoPlugin">Geo Plugin</a> needs to be installed 
 				and activated for Geo Mashup to work.</p>
+				<p>Here is the array of plugins WordPress says are active:<pre>'.
+				print_r($activePlugins, true).'</pre>
+				If Geo is active, this list should contain geo.php.</p>
 			</div>';
 			return;
 		}
