@@ -51,7 +51,7 @@ GeoMashup.getTagContent = function (parent, tag, default_value) {
 		default_value = '';
 	}
 	var children = parent.getElementsByTagName(tag);
-	if (children.length > 0) {
+	if (children.length > 0 && children[0].firstChild) {
 		return children[0].firstChild.nodeValue;
 	} else {
 		return default_value;
@@ -104,20 +104,22 @@ GeoMashup.showPost = function (url) {
 	}
 	this.showing_url = url;
 	var request = new GXmlHttp.create();
-	if (geoPost.firstChild) {
-		geoPost.removeChild(geoPost.firstChild);
-	}
+	geoPost.innerHTML = '';
 	request.open('GET',url,true);
 	request.onreadystatechange = function() {
-		if (request.readyState == 4 && request.status == 200) {
-			var node = document.createElement('div');
-			node.innerHTML = request.responseText;
-			var divs = node.getElementsByTagName('div');
-			for (var i=0; i<divs.length; i++) {
-				if (divs[i].className=='post') { 
-					geoPost.appendChild(divs[i]);
-					break;
+		if (request.readyState == 4) {
+			if (request.status == 200) {
+				var node = document.createElement('div');
+				node.innerHTML = request.responseText;
+				var divs = node.getElementsByTagName('div');
+				for (var i=0; i<divs.length; i++) {
+					if (divs[i].className=='post') { 
+						geoPost.appendChild(divs[i]);
+						break;
+					}
 				}
+			} else {
+				geoPost.innerHTML = 'Request for '+url+' failed: '+request.status;
 			}
 		}
 	}
@@ -149,21 +151,18 @@ GeoMashup.createMarker = function(point) {
 					request.open('GET', url, false);
 					try {
 						request.send(null);
-						var xmlDoc = request.responseXML;
 						if (!GeoMashup.locations[point].xmlDoc) {
 							// This is the only post, use the XML as it is
-							GeoMashup.locations[point].xmlDoc = xmlDoc;
+							GeoMashup.locations[point].xmlDoc = request.responseXML;
 						} else {
 							// There are multiple posts here, append this one to the others
-							var newItem = xmlDoc.getElementsByTagName("item")[0];
-							var channel = GeoMashup.locations[point].xmlDoc.getElementsByTagName("channel")[0];
-							if (channel && newItem) {
-								channel.appendChild(newItem);
-							}
+							var newItem = request.responseXML.getElementsByTagName('item')[0];
+							var channel = GeoMashup.locations[point].xmlDoc.getElementsByTagName('channel')[0];
+							channel.appendChild(newItem);
 						} 
 						GeoMashup.locations[point].loaded[post_id] = true;
 					} catch (e) {
-						alert('Request for post ' + post_id + ' failed: ' + e);
+						alert('Request for ' + url + ' failed: ' + e);
 					}
 				} // end if not loaded
 			} // end location posts loop
