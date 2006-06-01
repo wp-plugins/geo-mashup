@@ -180,6 +180,7 @@ class GeoMashup {
 			$opts['add_map_type_control'] = 'false';
 			$opts['add_overview_control'] = 'false';
 			$opts['show_post'] = 'false';
+			$opts['show_future'] = 'false';
 			foreach($_POST as $name => $value) {
 				$opts[$name] = $value;
 			}
@@ -195,6 +196,8 @@ class GeoMashup {
 			$opts['info_window_width'] = '300';
 			$opts['info_window_height'] = '175';
 			$opts['font_size'] = '75';
+			$opts['excerpt_format'] = 'text';
+			$opts['excerpt_length'] = '250';
 			if (!isset($opts['map_control'])) {
 				$opts['map_control'] = 'GSmallMapControl';
 			}
@@ -265,6 +268,20 @@ class GeoMashup {
 		} else {
 			$showPostChecked = '';
 		}
+
+		if ($opts['show_future'] == 'true') {
+			$showFutureChecked = ' checked="true"';
+		} else {
+			$showFutureChecked = '';
+		}
+
+		if ($opts['excerpt_format'] == 'text') {
+			$textExcerptChecked = ' checked="true"';
+			$htmlExcerptChecked = '';
+		} else {
+			$textExcerptChecked = '';
+			$htmlExcerptChecked = ' checked="true"';
+		}
 		
 		// Write the form
 		echo '
@@ -311,6 +328,10 @@ class GeoMashup {
 							__('0-17', 'GeoMashup').'</td>
 						</tr>
 						<tr>
+							<th scope="row">'.__('Show Future Posts', 'GeoMashup').'</th>
+							<td><input id="show_future" name="show_future" type="checkbox" value="true"'.$showFutureChecked.' /></td>
+						</tr>
+						<tr>
 							<th scope="row">'.__('Enable Full Post Display', 'GeoMashup').'</th>
 							<td><input id="show_post" name="show_post" type="checkbox" value="true"'.$showPostChecked.' /></td>
 						</tr>
@@ -319,6 +340,16 @@ class GeoMashup {
 				<fieldset>
 					<legend>'.__('Presentation', 'GeoMashup').'</legend>
 					<table width="100%" cellspacing="2" cellpadding="5" class="editform">
+						<tr>
+							<th width="33%" scope="row">'.__('Post Excerpt Format', 'GeoMashup').'</th>
+							<td><input name="excerpt_format" type="radio" value="text"'.$textExcerptChecked.' />'.
+							__('Text', 'GeoMashup').'<input name="excerpt_format" type="radio" value="html"'.$htmlExcerptChecked.' />'.
+							__('HTML', 'GeoMashup').'</td>
+						</tr>
+						<tr>
+							<th width="33%" scopt="row">'.__('Post Excerpt Length', 'GeoMashup').'</th>
+							<td><input id="excerpt_length" name="excerpt_length" type="text" size="5" value="'.$opts['excerpt_length'].'" /></td>
+						</tr>
 						<tr>
 							<th width="33%" scope="row">'.__('Include style settings', 'GeoMashup').'</th>
 							<td><input id="include_style" name="include_style" type="checkbox" value="true"'.$styleChecked.' />'.
