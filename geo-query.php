@@ -2,9 +2,12 @@
 
 require('../../../wp-blog-header.php');
 
-header("Content-type: text/xml; charset=".get_settings('blog_charset'), true);
+header('Content-type: text/xml; charset='.get_settings('blog_charset'), true);
+header('Cache-Control: no-cache;', true);
+
 echo '<?xml version="1.0" encoding="'.get_settings('blog_charset').'"?'.'>'."\n";
 
+$opts = get_settings('geo_mashup_options');
 $post_id =$_GET['post_id'];
 if (is_numeric($post_id)) { 
 	queryPost($post_id);
@@ -12,8 +15,21 @@ if (is_numeric($post_id)) {
 	queryLocations();
 }
 
+function trimHtml($html, $length) {
+	$end_pos = 0;
+	$text_len = 0;
+	$tag_count = 0;
+	while ($text_len<$length) {
+		if ($html[$end_pos] == '<') $tag_count++;
+		else if ($html[$end_pos] == '>') $tag_count--;
+		$end_pos++;
+		if ($tag_count == 0) $text_len++;
+	}
+	return substr($html,0,$end_pos);
+}
+
 function queryPost($post_id) {
-	global $wpdb;
+	global $wpdb, $opts;
 	echo '<channel><title>GeoMashup Query</title><item>';
 	$post = $wpdb->get_row("SELECT * FROM {$wpdb->posts} WHERE ID=$post_id");
 	if (!$post) {
@@ -26,24 +42,35 @@ function queryPost($post_id) {
 			echo '<category>'.$category.'</category>';
 		}
 		$author = $wpdb->get_var("SELECT display_name FROM {$wpdb->users} WHERE ID={$post->post_author}");
-		echo '<author>'.$author.'</author>'.
+		if ($opts['excerpt_format']=='html') {
+			$excerpt = htmlspecialchars(balanceTags(trimHtml($post->post_content,$opts['excerpt_length'])));
+		} else {
+			$excerpt = htmlspecialchars(substr(strip_tags($post->post_content),0,$opts['excerpt_length']));
+		}
+		echo '<author>'.htmlspecialchars($author).'</author>'.
 			'<pubDate>'.$post->post_date.'</pubDate>'.
-			'<title>'.$post->post_title.'</title>'.
-			'<link>'.$post->guid.'</link>'.
-			'<description>'.htmlspecialchars(substr($post->post_content,0,255)).'</description>';
+			'<title>'.htmlspecialchars($post->post_title).'</title>'.
+			'<link>'.get_permalink($post_id).'</link>'.
+			'<description>'.$excerpt.'</description>';
 	}
 	echo '</item></channel>';
 }
 
 function queryLocations() {
-	global $wpdb;
+	global $wpdb, $opts;
 	echo "<markers>\n";
 
 	// Construct the query string.
 	$query_string = 'SELECT post_id, meta_value'.
 		' FROM '.$wpdb->postmeta.
+		' INNER JOIN '. $wpdb->posts.
+		' ON ' . $wpdb->postmeta .' .post_id = ' . $wpdb->posts .'.ID'.
 		' WHERE meta_key=\'_geo_location\''.
+		' AND post_status=\'publish\''.
 		' AND length(meta_value)>1';
+	if ($opts['show_future'] != 'true') {
+		$query_string .= ' AND post_date<NOW()';
+	}
 
 	$minlat = $_GET['minlat'];
 	if (is_numeric($minlat)) {
