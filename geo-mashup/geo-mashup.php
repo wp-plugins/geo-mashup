@@ -33,13 +33,12 @@ load_plugin_textdomain('GeoMashup');
  */
 class GeoMashup {
 
-	function wp_head($not_used) {
+	function wp_head() {
 		$opts = get_settings('geo_mashup_options');
 		if (!is_page($opts['mashup_page'])) {
 			return;
 		}
 
-		$linkDir = get_bloginfo('url')."/wp-content/plugins/geo-mashup";
 		if ($opts['google_key']) {
 			// Generate the mashup javascript
 			if ($opts['include_style'] == 'true') {
@@ -76,8 +75,19 @@ class GeoMashup {
 				</style>';
 			}
 			echo '
-			<script src="http://maps.google.com/maps?file=api&amp;v=2&amp;key='.$opts['google_key'].'" type="text/javascript"></script>
-			<script type="text/javascript" src="'.$linkDir.'/geo-mashup.js"></script>
+			<script src="http://maps.google.com/maps?file=api&amp;v=2&amp;key='.$opts['google_key'].'" type="text/javascript"></script>';
+		}
+	}
+
+	function wp_footer() {
+		$opts = get_settings('geo_mashup_options');
+		if (!is_page($opts['mashup_page'])) {
+			return;
+		}
+
+		if ($opts['google_key']) {
+			$linkDir = get_bloginfo('url')."/wp-content/plugins/geo-mashup";
+			echo '	
 			<script type="text/javascript">
 			  //<![CDATA[
 				GeoMashup.linkDir = "'.$linkDir.'";
@@ -108,11 +118,17 @@ class GeoMashup {
 				echo '
 				GeoMashup.loadLon = "'.$_GET['lon'].'";';
 			}
+			if ($_GET['cat']) {
+				echo '
+				GeoMashup.cat = "'.$_GET['cat'].'";';
+			}
 			if ($_GET['zoom']) {
 				echo '
 				GeoMashup.loadZoom = '.$_GET['zoom'].';';
 			}
+			readfile('geo-mashup.js',true);
 			echo '
+				GeoMashup.loadMap();
 				//]]>
 			</script>';
 		}
@@ -162,14 +178,13 @@ class GeoMashup {
 		}
 		if (!$isGeoActive) {
 			echo '
-			<div class="wrap">
+			<div class="updated">
 				<p>The <a href="http://dev.wp-plugins.org/wiki/GeoPlugin">Geo Plugin</a> needs to be installed 
-				and activated for Geo Mashup to work.</p>
+				and activated for Geo Mashup to work, but it wasn\'t found. We\'ll go on anyway and hope for the best...</p>
 				<p>Here is the array of plugins WordPress says are active:<pre>'.
 				print_r($activePlugins, true).'</pre>
-				If Geo is active, this list should contain geo.php.</p>
+				If Geo is active, this list should contain geo.php. </p>
 			</div>';
-			return;
 		}
 
 		$opts = get_settings('geo_mashup_options');
@@ -391,7 +406,7 @@ class GeoMashup {
 	function body_attribute() {
 		$opts = get_settings('geo_mashup_options');
 		if (is_page($opts['mashup_page'])) {
-			echo ' onload="GeoMashup.loadMap()"';
+			//echo ' onload="GeoMashup.loadMap()"';
 	}
 }
 
@@ -422,6 +437,7 @@ class GeoMashup {
 } // class GeoMashup
 
 add_action('wp_head', array('GeoMashup', 'wp_head'));
+add_action('wp_footer', array('GeoMashup', 'wp_footer'));
 add_action('admin_menu', array('GeoMashup', 'admin_menu'));
 add_filter('the_content', array('GeoMashup', 'the_content'));
 
