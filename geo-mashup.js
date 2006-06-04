@@ -213,6 +213,11 @@ GeoMashup.loadMap = function() {
 	this.showing_url = '';
 	this.checkDependencies();
 	this.map = new GMap2(this.container);
+	if (document.all&&window.attachEvent) { // IE-Win
+			 window.attachEvent("onunload", GUnload);
+	} else if (window.addEventListener) { // Others
+			 window.addEventListener("unload", GUnload, false);
+	}
 	GEvent.addListener(this.map, "moveend", function() {
 		var request = GXmlHttp.create();
 		var bounds = GeoMashup.map.getBounds();
