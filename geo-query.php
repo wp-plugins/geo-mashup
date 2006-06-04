@@ -60,45 +60,48 @@ function queryLocations() {
 	global $wpdb, $opts;
 	echo "<markers>\n";
 
-	// Construct the query string.
-	$query_string = 'SELECT post_id, meta_value'.
-		' FROM '.$wpdb->postmeta.
+	// Construct the query 
+	$fields = 'ID, meta_value';
+	$tables = $wpdb->postmeta.
 		' INNER JOIN '. $wpdb->posts.
-		' ON ' . $wpdb->postmeta .' .post_id = ' . $wpdb->posts .'.ID'.
-		' WHERE meta_key=\'_geo_location\''.
+		' ON ' . $wpdb->postmeta .' .post_id = ' . $wpdb->posts .'.ID';
+	$where = 'meta_key=\'_geo_location\''.
 		' AND post_status=\'publish\''.
 		' AND length(meta_value)>1';
+
 	if ($opts['show_future'] != 'true') {
-		$query_string .= ' AND post_date<NOW()';
+		$where .= ' AND post_date<NOW()';
 	}
 
 	$minlat = $_GET['minlat'];
 	if (is_numeric($minlat)) {
 		$minlat = mysql_real_escape_string($minlat);
-		$query_string .= " AND substring_index(meta_value,',',1)>$minlat";
+		$where .= " AND substring_index(meta_value,',',1)>$minlat";
 	}
 	$minlon = $_GET['minlon'];
 	if (is_numeric($minlon)) {
 		$minlon = mysql_real_escape_string($minlon);
-		$query_string .= " AND substring_index(meta_value,',',-1)>$minlon";
+		$where .= " AND substring_index(meta_value,',',-1)>$minlon";
 	}
 	$maxlat = $_GET['maxlat'];
 	if (is_numeric($maxlat)) {
 		$maxlat = mysql_real_escape_string($maxlat);
-		$query_string .= " AND substring_index(meta_value,',',1)<$maxlat";
+		$where .= " AND substring_index(meta_value,',',1)<$maxlat";
 	}
 	$maxlon = $_GET['maxlon'];
 	if (is_numeric($maxlon)) {
 		$maxlon = mysql_real_escape_string($maxlon);
-		$query_string .= " AND substring_index(meta_value,',',-1)<$maxlon";
+		$where .= " AND substring_index(meta_value,',',-1)<$maxlon";
 	}
-	$category = $_GET['category'];
-	if ($category) {
-		$category = mysql_real_escape_string($category);
-		$query_string .= " AND category_nicename='$category'";
+	$cat = $_GET['cat'];
+	if (is_numeric($cat)) {
+		$cat = mysql_real_escape_string($cat);
+		$tables .= ' INNER JOIN '.$wpdb->post2cat.
+			' ON '.$wpdb->posts.'.ID = '.$wpdb->post2cat.'.post_id';
+		$where .= " AND category_id=$cat";
 	}
 
-	$query_string .= " ORDER BY post_id DESC";
+	$query_string .= "SELECT $fields FROM $tables WHERE $where ORDER BY ID DESC";
 
 	$limit = $_GET['limit'];
 	if (!($minlat && $maxlat && $minlon && $maxlon) && !$limit && !$category) {
@@ -114,7 +117,7 @@ function queryLocations() {
 	if ($wpdb->last_result) {
 		foreach ($wpdb->last_result as $row) {
 			list($lat,$lon) = split(',',$row->meta_value);
-			echo '<marker post_id="'.$row->post_id.'" lat="'.$lat.'" lon="'.$lon."\" />\n";
+			echo '<marker post_id="'.$row->ID.'" lat="'.$lat.'" lon="'.$lon."\" />\n";
 		}
 	}
 	echo "</markers>\n";
