@@ -126,6 +126,10 @@ class GeoMashup {
 				echo '
 				GeoMashup.loadZoom = '.$_GET['zoom'].';';
 			}
+			$custom_marker_file = dirname(__FILE__).'/custom-marker.js';
+			if (is_readable($custom_marker_file)) {
+				readfile($custom_marker_file);
+			}
 			readfile('geo-mashup.js',true);
 			echo '
 				GeoMashup.loadMap();

@@ -128,7 +128,12 @@ GeoMashup.showPost = function (url) {
 
 // Create a marker whose info window displays the given number
 GeoMashup.createMarker = function(point) {
-	var marker = new GMarker(point);
+	var marker;
+	if (this.marker_icon) {
+		marker = new GMarker(point, this.marker_icon);
+	} else {
+		marker = new GMarker(point);
+	}
 
 	// Show this markers index in the info window when it is clicked
 	GEvent.addListener(marker, "click", function() {
