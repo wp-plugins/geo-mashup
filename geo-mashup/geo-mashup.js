@@ -79,17 +79,17 @@ GeoMashup.renderRss = function (rss_doc) {
 			tags.push(categories[j].firstChild.nodeValue);
 		}
 		html = html.concat(['<h2><a href="', url, '" onclick="', onclick, '">',
-			title,'</a></h2><p class="meta"><span class="blogdate">',pubDate,'</span>, ',
+			title,'<\/a><\/h2><p class="meta"><span class="blogdate">',pubDate,'<\/span>, ',
 			tags.join(' '),
-			'</p>']);
+			'<\/p>']);
 		if (items.length == 1) {
 			var desc = this.getTagContent(items[i],'description').replace('[...]','');
 			html = html.concat(['<p class="storycontent">',desc,
-				'<a href="',url,'" onclick="',onclick,'">[...]</a></p>']);
+				'<a href="',url,'" onclick="',onclick,'">[...]<\/a><\/p>']);
 			if (this.showPostHere) { this.showPost(link); }
 		}
 	} 
-	html.push('</div>');
+	html.push('<\/div>');
 	return html.join('');
 }
 
@@ -187,10 +187,10 @@ GeoMashup.checkDependencies = function () {
 	if (typeof(GMap) == "undefined" || !GBrowserIsCompatible()) {
 		this.container.innerHTML = '<p class="errormessage">' +
 			'Sorry, the Google Maps script failed to load. Have you entered your ' +
-			'<a href="http://maps.google.com/apis/maps/signup.html">API key</a> ' +
+			'<a href="http://maps.google.com/apis/maps/signup.html">API key<\/a> ' +
 			'in the <a href="' + this.linkDir + 
 			'../../../wp-admin/options-general.php?page=geo-mashup/geo-mashup.php">' +
-			'Geo Mashup Options</a>?';
+			'Geo Mashup Options<\/a>?';
 		throw "The Google Maps javascript didn't load.";
 	}
 }
@@ -209,17 +209,14 @@ GeoMashup.loadMap = function() {
 	this.checkDependencies();
 	this.map = new GMap2(this.container);
 	GEvent.addListener(this.map, "moveend", function() {
-		// Download markers from the blog and load it on the map. The format we
-		// expect is:
-		// <markers>
-		//	<marker post_id="1" lat="37.441" lon="-122.141"/>
-		//	<marker post_id="2" lat="37.322" lon="-121.213"/>
-		// </markers>
 		var request = GXmlHttp.create();
 		var bounds = GeoMashup.map.getBounds();
 		var url = GeoMashup.linkDir + '/geo-query.php?minlat=' +
 			bounds.getSouthWest().lat() + '&minlon=' + bounds.getSouthWest().lng() + '&maxlat=' +
 			bounds.getNorthEast().lat() + '&maxlon=' + bounds.getNorthEast().lng();
+		if (GeoMashup.cat) {
+			url += '&cat=' + GeoMashup.cat;
+		}
 		request.open("GET", url, true);
 		request.onreadystatechange = function() {
 			if (request.readyState == 4) {
@@ -263,13 +260,13 @@ GeoMashup.loadMap = function() {
 		// look for load settings in cookies
 		this.loadLat = this.getCookie("loadLat");
 		this.loadLon = this.getCookie("loadLon");
-		this.loadZoom = parseInt(this.getCookie("loadZoom"));
-		var mapTypeNum = parseInt(this.getCookie("loadType"));
-		this.loadType = this.map.getMapTypes()[mapTypeNum];
 	}
 	// Use default zoom level if appropriate
 	if (!this.loadZoom) {
-		if (this.defaultZoom) {
+		var cookieZoom = parseInt(this.getCookie("loadZoom"));
+		if (cookieZoom) {
+			this.loadZoom = cookieZoom;
+		} else if (this.defaultZoom) {
 			this.loadZoom = this.defaultZoom;
 		} else {
 			this.loadZoom = 5;
@@ -277,7 +274,10 @@ GeoMashup.loadMap = function() {
 	}
 	// Use default map type if appropriate
 	if (!this.loadType) {
-		if (this.defaultMapType) {
+		var cookieTypeNum = parseInt(this.getCookie("loadType"));
+		if (cookieTypeNum) {
+			this.loadType = this.map.getMapTypes()[cookieTypeNum];
+		} else if (this.defaultMapType) {
 			this.loadType = this.defaultMapType;
 		} else {
 			this.loadType = G_NORMAL_MAP;
@@ -285,12 +285,14 @@ GeoMashup.loadMap = function() {
 	} 
 
 	if (this.loadLat && this.loadLon && this.loadZoom) {
-		// Center on the last clicked marker
 		this.map.setCenter(new GLatLng(this.loadLat, this.loadLon), this.loadZoom, this.loadType);
 	} else {
 		// Center the map on the most recent geo-tagged post
 		var request = GXmlHttp.create();
 		var url = this.linkDir + '/geo-query.php';
+		if (this.cat) {
+			url += '?cat='+this.cat;
+		}
 		request.open("GET", url, false);
 		request.send(null);
 		var xmlDoc = request.responseXML;
