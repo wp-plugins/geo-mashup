@@ -15,8 +15,6 @@ PURPOSE. See the GNU General Public License for more
 details.
 */
 
-function GeoMashup() {}
-
 GeoMashup.posts = new Array();
 GeoMashup.locations = new Array();
 GeoMashup.loading = false;
@@ -272,11 +270,11 @@ GeoMashup.loadMap = function() {
 		this.loadLon = this.getCookie("loadLon");
 	}
 	// Use default zoom level if appropriate
-	if (!this.loadZoom) {
+	if (typeof(this.loadZoom) == 'undefined') {
 		var cookieZoom = parseInt(this.getCookie("loadZoom"));
 		if (cookieZoom) {
 			this.loadZoom = cookieZoom;
-		} else if (this.defaultZoom) {
+		} else if (typeof(this.defaultZoom) != 'undefined') {
 			this.loadZoom = this.defaultZoom;
 		} else {
 			this.loadZoom = 5;
@@ -294,7 +292,7 @@ GeoMashup.loadMap = function() {
 		}
 	} 
 
-	if (this.loadLat && this.loadLon && this.loadZoom) {
+	if (this.loadLat && this.loadLon && typeof(this.loadZoom) != 'undefined') {
 		this.map.setCenter(new GLatLng(this.loadLat, this.loadLon), this.loadZoom, this.loadType);
 	} else {
 		// Center the map on the most recent geo-tagged post
@@ -335,6 +333,10 @@ GeoMashup.loadMap = function() {
 			ov.style.position = 'absolute';
 			this.container.appendChild(ov);
 		}
+	}
+
+	if (this.addCategoryControl) {
+		this.map.addControl(new GeoMashupCategoryControl());
 	}
 
 } // end loadMap();
