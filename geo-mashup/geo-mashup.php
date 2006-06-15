@@ -487,18 +487,31 @@ class GeoMashup {
 	/**
 	 * A tag to insert a link to a post on the mashup.
 	 */
-	function post_link($text = 'Geo Mashup') {
+	function post_link($text = 'Geo Mashup', $display = true) {
 		global $geoMashupOpts;
 		$lat = get_Lat();
 		$lon = get_Lon();
 		if ($lat && $lon) {
+			$link = '';
 			$using_pretty_links = get_settings('permalink_structure');
 			if ($using_pretty_links) {
-				echo '<a href="'.get_bloginfo('url').'/'.$geoMashupOpts['mashup_page']."?lat=$lat&lon=$lon\">$text</a>";
+				$link = '<a href="'.get_bloginfo('url').'/'.$geoMashupOpts['mashup_page']."?lat=$lat&lon=$lon\">$text</a>";
 			} else {
-				echo '<a href="'.get_bloginfo('url').'?pagename='.$geoMashupOpts['mashup_page']."&lat=$lat&lon=$lon\">$text</a>";
+				$link = '<a href="'.get_bloginfo('url').'?pagename='.$geoMashupOpts['mashup_page']."&lat=$lat&lon=$lon\">$text</a>";
+			}
+			if ($display) {
+				echo $link;
+			} else {
+				return $link;
 			}
 		}
+	}
+
+	/**
+	* A better name for the post_link tag.
+	*/
+	function show_on_map_link($text = 'Show On Map', $display = true) {
+		GeoMashup::post_link($text,$display);
 	}
 
 } // class GeoMashup
