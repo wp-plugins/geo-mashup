@@ -4,6 +4,7 @@ require('../../../wp-blog-header.php');
 
 header('Content-type: text/xml; charset='.get_settings('blog_charset'), true);
 header('Cache-Control: no-cache;', true);
+header('Expires: -1;', true);
 
 echo '<?xml version="1.0" encoding="'.get_settings('blog_charset').'"?'.'>'."\n";
 
@@ -76,23 +77,32 @@ function queryLocations() {
 	$minlat = $_GET['minlat'];
 	if (is_numeric($minlat)) {
 		$minlat = mysql_real_escape_string($minlat);
-		$where .= " AND substring_index(meta_value,',',1)>$minlat";
 	}
 	$minlon = $_GET['minlon'];
 	if (is_numeric($minlon)) {
 		$minlon = mysql_real_escape_string($minlon);
-		$where .= " AND substring_index(meta_value,',',-1)>$minlon";
 	}
 	$maxlat = $_GET['maxlat'];
 	if (is_numeric($maxlat)) {
 		$maxlat = mysql_real_escape_string($maxlat);
-		$where .= " AND substring_index(meta_value,',',1)<$maxlat";
 	}
 	$maxlon = $_GET['maxlon'];
 	if (is_numeric($maxlon)) {
 		$maxlon = mysql_real_escape_string($maxlon);
-		$where .= " AND substring_index(meta_value,',',-1)<$maxlon";
 	}
+	// Ignore nonsense bounds
+	if ($minlat && $maxlat && $minlat>$maxlat) {
+		$minlat = $maxlat = 0;
+	}
+	if ($minlon && $maxlon && $minlon>$maxlon) {
+		$minlon = $maxlon = 0;
+	}
+	// Build bounding where clause
+	if ($minlat) $where .= " AND substring_index(meta_value,',',1)>$minlat";
+	if ($minlon) $where .= " AND substring_index(meta_value,',',-1)>$minlon";
+	if ($maxlat) $where .= " AND substring_index(meta_value,',',1)<$maxlat";
+	if ($maxlon) $where .= " AND substring_index(meta_value,',',-1)<$maxlon";
+
 	$cat = $_GET['cat'];
 	if (is_numeric($cat)) {
 		$cat = mysql_real_escape_string($cat);
