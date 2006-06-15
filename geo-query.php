@@ -44,7 +44,7 @@ function queryPost($post_id) {
 		}
 		$author = $wpdb->get_var("SELECT display_name FROM {$wpdb->users} WHERE ID={$post->post_author}");
 		if ($opts['excerpt_format']=='html') {
-			$excerpt = htmlspecialchars(balanceTags(trimHtml($post->post_content,$opts['excerpt_length'])));
+			$excerpt = htmlspecialchars(balanceTags(trimHtml(apply_filters('the_content',$post->post_content),$opts['excerpt_length'])));
 		} else {
 			$excerpt = htmlspecialchars(substr(strip_tags($post->post_content),0,$opts['excerpt_length']));
 		}
