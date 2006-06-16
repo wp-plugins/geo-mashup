@@ -180,21 +180,31 @@ class GeoMashup {
 	}
 
 	function list_cats($content, $category = null) {
-		global $geoMashupOpts;
+		global $wpdb, $geoMashupOpts;
 		if ($category) {
-			$base_url = get_bloginfo('url');
-			$using_pretty_links = get_settings('permalink_structure');
-			if ($using_pretty_links) {
-				return $content.'</a>'.$geoMashupOpts['category_link_separator'].'<a href="'.get_bloginfo('url').'/'.$geoMashupOpts['mashup_page'].
-					'?cat='.$category->cat_ID.'&zoom='.$geoMashupOpts['category_zoom'].'">'.$geoMashupOpts['category_link_text'];
-			} else {
-				return $content.'</a>'.$geoMashupOpts['category_link_separator'].'<a href="'.get_bloginfo('url').'?pagename='.$geoMashupOpts['mashup_page'].
-					'&cat='.$category->cat_ID.'&zoom='.$geoMashupOpts['category_zoom'].'">'.$geoMashupOpts['category_link_text'];
+			$query = "SELECT count(*) FROM {$wpdb->posts} p INNER JOIN {$wpdb->post2cat} pc 
+				ON pc.post_id=p.ID INNER JOIN {$wpdb->postmeta} pm
+				ON pm.post_id=p.ID 
+				WHERE pc.category_id={$category->cat_ID} 
+				AND pm.meta_key='_geo_location'
+				AND length(pm.meta_value)>1
+				AND p.post_status='publish'";
+			$count = $wpdb->get_var($query);
+			if ($count) {
+				// Add map link only if there are geo-located posts to see
+				$using_pretty_links = get_settings('permalink_structure');
+				if ($using_pretty_links) {
+					return $content.'</a>'.$geoMashupOpts['category_link_separator'].'<a href="'.get_bloginfo('url').'/'.$geoMashupOpts['mashup_page'].
+						'?cat='.$category->cat_ID.'&zoom='.$geoMashupOpts['category_zoom'].'">'.$geoMashupOpts['category_link_text'];
+				} else {
+					return $content.'</a>'.$geoMashupOpts['category_link_separator'].'<a href="'.get_bloginfo('url').'?pagename='.$geoMashupOpts['mashup_page'].
+						'&cat='.$category->cat_ID.'&zoom='.$geoMashupOpts['category_zoom'].'">'.$geoMashupOpts['category_link_text'];
+				}
 			}
-		} else {
-			return $content;
 		}
+		return $content;
 	}
+
 	function admin_menu() {
 		if (function_exists('add_options_page')) {
 			add_options_page('Geo Mashup Options', 'Geo Mashup', 8, __FILE__, array('GeoMashup', 'options_page'));
