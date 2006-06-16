@@ -195,10 +195,12 @@ class GeoMashup {
 				$using_pretty_links = get_settings('permalink_structure');
 				if ($using_pretty_links) {
 					return $content.'</a>'.$geoMashupOpts['category_link_separator'].'<a href="'.get_bloginfo('url').'/'.$geoMashupOpts['mashup_page'].
-						'?cat='.$category->cat_ID.'&zoom='.$geoMashupOpts['category_zoom'].'">'.$geoMashupOpts['category_link_text'];
+						'?cat='.$category->cat_ID.'&zoom='.$geoMashupOpts['category_zoom'].'" title="'.$geoMashupOpts['category_link_text'].
+						'">'.$geoMashupOpts['category_link_text'];
 				} else {
 					return $content.'</a>'.$geoMashupOpts['category_link_separator'].'<a href="'.get_bloginfo('url').'?pagename='.$geoMashupOpts['mashup_page'].
-						'&cat='.$category->cat_ID.'&zoom='.$geoMashupOpts['category_zoom'].'">'.$geoMashupOpts['category_link_text'];
+						'&cat='.$category->cat_ID.'&zoom='.$geoMashupOpts['category_zoom'].'" title="'.$geoMashupOpts['category_link_text'].
+						'">'.$geoMashupOpts['category_link_text'];
 				}
 			}
 		}
