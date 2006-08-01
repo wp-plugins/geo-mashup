@@ -144,7 +144,8 @@ class GeoMashup {
 			if (is_readable($custom_marker_file)) {
 				readfile($custom_marker_file);
 			}
-			readfile('geo-mashup.js',true);
+			$mashup_js_file = dirname(__FILE__).'/geo-mashup.js';
+			readfile($mashup_js_file);
 			echo '
 				GeoMashup.loadMap();
 				//]]>
@@ -505,11 +506,12 @@ class GeoMashup {
 		$lon = get_Lon();
 		if ($lat && $lon) {
 			$link = '';
+			$url = get_bloginfo('url');
 			$using_pretty_links = get_settings('permalink_structure');
-			if ($using_pretty_links) {
-				$link = '<a href="'.get_bloginfo('url').'/'.$geoMashupOpts['mashup_page']."?lat=$lat&lon=$lon\">$text</a>";
+			if ($using_pretty_links && !(strstr($url,'index.php'))) {
+				$link = '<a href="'.$url.'/'.$geoMashupOpts['mashup_page'].htmlentities("/?lat=$lat&lon=$lon")."\">$text</a>";
 			} else {
-				$link = '<a href="'.get_bloginfo('url').'?pagename='.$geoMashupOpts['mashup_page']."&lat=$lat&lon=$lon\">$text</a>";
+				$link = '<a href="'.$url.'?pagename='.$geoMashupOpts['mashup_page'].htmlentities("&lat=$lat&lon=$lon")."\">$text</a>";
 			}
 			if ($display) {
 				echo $link;
