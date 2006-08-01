@@ -2,6 +2,7 @@
 
 require('../../../wp-blog-header.php');
 
+status_header(200);
 header('Content-type: text/xml; charset='.get_settings('blog_charset'), true);
 header('Cache-Control: no-cache;', true);
 header('Expires: -1;', true);
