@@ -87,7 +87,7 @@ class GeoMashup {
 		}
 
 		if ($geoMashupOpts['google_key']) {
-			$linkDir = get_bloginfo('url')."/wp-content/plugins/geo-mashup";
+			$linkDir = get_bloginfo('wpurl')."/wp-content/plugins/geo-mashup";
 			echo '	
 			<script type="text/javascript">
 			  //<![CDATA[
