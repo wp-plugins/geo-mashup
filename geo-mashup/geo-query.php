@@ -112,7 +112,7 @@ function queryLocations() {
 		$where .= " AND category_id=$cat";
 	}
 
-	$query_string .= "SELECT $fields FROM $tables WHERE $where ORDER BY ID DESC";
+	$query_string .= "SELECT $fields FROM $tables WHERE $where ORDER BY post_date DESC";
 
 	$limit = $_GET['limit'];
 	if (!($minlat && $maxlat && $minlon && $maxlon) && !$limit && !$category) {
