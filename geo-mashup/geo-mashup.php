@@ -3,7 +3,7 @@
 Plugin Name: Geo Mashup
 Plugin URI: http://www.cyberhobo.net/downloads/geo-mashup-plugin/
 Description: Adds a Google Maps mashup of blog posts geocoded with the Geo plugin. For WordPress 1.5.1 or higher. Minimal instructions and configuration will be in <a href="options-general.php?page=geo-mashup/geo-mashup.php">Options->Geo Mashup</a> after the plugin is activated.
-Version: 0.4 
+Version: 0.5 
 Author: Dylan Kuhn
 Author URI: http://www.cyberhobo.net/
 Minimum WordPress Version Required: 1.5.1
@@ -130,6 +130,10 @@ class GeoMashup {
 				echo '
 				GeoMashup.showPostHere = '.$geoMashupOpts['show_post'].';';
 			}
+			if ($geoMashupOpts['show_log'] == 'true') {
+				echo '
+				GeoMashup.showLog = '.$geoMashupOpts['show_log'].';';
+			}
 			if ($_GET['lat'] && $_GET['lon']) {
 				echo '
 				GeoMashup.loadLat = "'.$_GET['lat'].'";';
@@ -242,6 +246,7 @@ class GeoMashup {
 			$geoMashupOpts['add_overview_control'] = 'false';
 			$geoMashupOpts['add_category_links'] = 'false';
 			$geoMashupOpts['show_post'] = 'false';
+			$geoMashupOpts['show_log'] = 'false';
 			$geoMashupOpts['show_future'] = 'false';
 			foreach($_POST as $name => $value) {
 				$geoMashupOpts[$name] = $value;
@@ -341,6 +346,11 @@ class GeoMashup {
 			$showPostChecked = '';
 		}
 
+		if ($geoMashupOpts['show_log'] == 'true') {
+			$showLogChecked = ' checked="true"';
+		} else {
+			$showLogChecked = '';
+		}
 		if ($geoMashupOpts['show_future'] == 'true') {
 			$showFutureChecked = ' checked="true"';
 		} else {
@@ -406,6 +416,10 @@ class GeoMashup {
 						<tr>
 							<th scope="row">'.__('Enable Full Post Display', 'GeoMashup').'</th>
 							<td><input id="show_post" name="show_post" type="checkbox" value="true"'.$showPostChecked.' /></td>
+						</tr>
+						<tr>
+							<th scope="row">'.__('Show Debugging Log', 'GeoMashup').'</th>
+							<td><input id="show_post" name="show_log" type="checkbox" value="true"'.$showLogChecked.' /></td>
 						</tr>
 					</table>
 				</fieldset>
