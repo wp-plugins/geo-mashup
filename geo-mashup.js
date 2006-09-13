@@ -20,6 +20,12 @@ GeoMashup.locations = new Array();
 GeoMashup.loading = false;
 GeoMashup.firstLoad = true;
 
+GeoMashup.log = function(message,color) {
+	if (this.showLog) {
+		GLog.write(message,color);
+	}
+}
+
 GeoMashup.getCookie = function(NameOfCookie) { 
 	if (document.cookie.length > 0) { 
 		var begin = document.cookie.indexOf(NameOfCookie+"=");
@@ -59,6 +65,7 @@ GeoMashup.getTagContent = function (parent, tag, default_value) {
 GeoMashup.renderRss = function (rss_doc) {
 	var items = rss_doc.getElementsByTagName('item');
 	if (items.length == 0) return false;
+	this.log('Render ' + items.length + ' items from RSS');
 	var html = ['<div class="locationinfo">'];
 		
 	for (var i=0; i<items.length; i++) {
@@ -92,6 +99,7 @@ GeoMashup.renderRss = function (rss_doc) {
 }
 
 GeoMashup.showPost = function (url) {
+	this.log('Show post: ' + url);
 	if (this.showing_url == url) {
 		return false;
 	}
@@ -124,8 +132,8 @@ GeoMashup.showPost = function (url) {
 	request.send(null);
 }
 
-// Create a marker whose info window displays the given number
 GeoMashup.createMarker = function(point) {
+	this.log('Create a marker at ' + point);
 	var marker;
 	if (this.marker_icon) {
 		marker = new GMarker(point, this.marker_icon);
@@ -144,21 +152,21 @@ GeoMashup.createMarker = function(point) {
 	GEvent.addListener(marker, "infowindowopen", function() {
 		if (GeoMashup.loading) {
 			var request = new GXmlHttp.create();
-			// Load all posts at the marker location
+			GeoMashup.log('Load all posts at ' + point);
 			for(var i=0; i<GeoMashup.locations[point].posts.length; i++) {
 				var post_id = GeoMashup.locations[point].posts[i];
 				if (!GeoMashup.locations[point].loaded[post_id]) {
-					// The post RSS XML has not been loaded yet, request it
+					GeoMashup.log('The XML for post ' + post_id + ' has not been loaded, request it');
 					var url = GeoMashup.linkDir + '/geo-query.php?post_id=' + post_id;
 					// Use a synchronous request to simplify multiple posts at a location
 					request.open('GET', url, false);
 					try {
 						request.send(null);
 						if (!GeoMashup.locations[point].xmlDoc) {
-							// This is the only post, use the XML as it is
+							GeoMashup.log('This is the only post here, use the XML as it is');
 							GeoMashup.locations[point].xmlDoc = request.responseXML;
 						} else {
-							// There are multiple posts here, append this one to the others
+							GeoMashup.log('There are multiple posts here, append this one to the others');
 							var newItem = request.responseXML.getElementsByTagName('item')[0];
 							var channel = GeoMashup.locations[point].xmlDoc.getElementsByTagName('channel')[0];
 							channel.appendChild(newItem);
@@ -176,6 +184,7 @@ GeoMashup.createMarker = function(point) {
 	}); // end marker infowindowopen
 
 	GEvent.addListener(marker, 'infowindowclose', function() {
+		GeoMashup.log('Closed the infowindow');
 		var geoPost = document.getElementById('geoPost');
 		if (geoPost && geoPost.firstChild) {
 			geoPost.removeChild(geoPost.firstChild);
@@ -187,6 +196,7 @@ GeoMashup.createMarker = function(point) {
 }
 
 GeoMashup.checkDependencies = function () {
+	this.log('Check browser compatibility');
 	if (typeof(GMap) == "undefined" || !GBrowserIsCompatible()) {
 		this.container.innerHTML = '<p class="errormessage">' +
 			'Sorry, the Google Maps script failed to load. Have you entered your ' +
@@ -199,7 +209,7 @@ GeoMashup.checkDependencies = function () {
 }
 
 GeoMashup.clickCenterMarker = function() {
-  // If there's a marker at the center, click it
+  this.log('If there is a marker at the center, click it');
 	var center = this.map.getCenter();
 	if (this.locations[center]) {
 		GEvent.trigger(this.locations[center].marker,"click");
@@ -217,6 +227,7 @@ GeoMashup.loadMap = function() {
 			 window.addEventListener("unload", GUnload, false);
 	}
 	GEvent.addListener(this.map, "moveend", function() {
+		GeoMashup.log('Moved the map, query for new visible locations');
 		var request = GXmlHttp.create();
 		var bounds = GeoMashup.map.getBounds();
 		var url = GeoMashup.linkDir + '/geo-query.php?minlat=' +
@@ -227,6 +238,7 @@ GeoMashup.loadMap = function() {
 		}
 		request.open("GET", url, true);
 		request.onreadystatechange = function() {
+			GeoMashup.log('Request state ' + request.readyState + ', status ' + request.status);
 			if (request.readyState == 4) {
 				var xmlDoc = request.responseXML;
 				var markers = xmlDoc.getElementsByTagName("marker");
@@ -265,18 +277,20 @@ GeoMashup.loadMap = function() {
 	});
 
 	if (!this.loadLat && !this.loadLon) {
-		// look for load settings in cookies
+		this.log('Look for load settings in cookies');
 		this.loadLat = this.getCookie("loadLat");
 		this.loadLon = this.getCookie("loadLon");
 	}
-	// Use default zoom level if appropriate
 	if (typeof(this.loadZoom) == 'undefined') {
 		var cookieZoom = parseInt(this.getCookie("loadZoom"));
 		if (cookieZoom) {
+			this.log('Zoom level ' + cookieZoom + ' from cookie');
 			this.loadZoom = cookieZoom;
 		} else if (typeof(this.defaultZoom) != 'undefined') {
+			this.log('Zoom level ' + this.defaultZoom + ' from default');
 			this.loadZoom = this.defaultZoom;
 		} else {
+			this.log('Zoom level 5, last resort');
 			this.loadZoom = 5;
 		}
 	}
@@ -284,18 +298,22 @@ GeoMashup.loadMap = function() {
 	if (!this.loadType) {
 		var cookieTypeNum = parseInt(this.getCookie("loadType"));
 		if (cookieTypeNum) {
+			this.log('Load type ' + cookieTypeNum + ' from cookie');
 			this.loadType = this.map.getMapTypes()[cookieTypeNum];
 		} else if (this.defaultMapType) {
+			this.log('Load type ' + this.defaultMapType + ' from default');
 			this.loadType = this.defaultMapType;
 		} else {
+			this.log('Load normal type, last resort');
 			this.loadType = G_NORMAL_MAP;
 		}
 	} 
 
 	if (this.loadLat && this.loadLon && typeof(this.loadZoom) != 'undefined') {
+		this.log('Center map based on load settings');
 		this.map.setCenter(new GLatLng(this.loadLat, this.loadLon), this.loadZoom, this.loadType);
 	} else {
-		// Center the map on the most recent geo-tagged post
+		this.log('Query the most recent geo-tagged post and center there');
 		var request = GXmlHttp.create();
 		var url = this.linkDir + '/geo-query.php';
 		if (this.cat) {
@@ -310,10 +328,13 @@ GeoMashup.loadMap = function() {
 				parseFloat(markers[0].getAttribute("lat")),
 				parseFloat(markers[0].getAttribute("lon")));
 			this.map.setCenter(point,this.loadZoom,this.loadType);
+		} else {
+			this.log('No posts available - center at 0,0');
+			this.map.setCenter(new GLatLng(0,0),this.loadZoom,this.loadType);
 		}
 	}
 
-	// Add controls
+	this.log('Add controls');
 	if (this.mapControl == 'GSmallZoomControl') {
 		this.map.addControl(new GSmallZoomControl());
 	} else if (this.mapControl == 'GSmallMapControl') {
@@ -342,8 +363,7 @@ GeoMashup.loadMap = function() {
 } // end loadMap();
 	
 GeoMashup.setBackCookies = function() {
-	// so when a post link is clicked you can go back to the spot
-	// you left on the map
+	this.log('Set cookies to remember map position');
 	var center = this.map.getCenter();
   var mapTypeNum = 0;
   for(var ix=0; ix<this.map.getMapTypes().length; ix++){
