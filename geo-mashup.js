@@ -209,7 +209,7 @@ GeoMashup.checkDependencies = function () {
 }
 
 GeoMashup.clickCenterMarker = function() {
-  this.log('If there is a marker at the center, click it');
+	this.log('If there is a marker at the center, click it');
 	var center = this.map.getCenter();
 	if (this.locations[center]) {
 		GEvent.trigger(this.locations[center].marker,"click");
@@ -269,7 +269,9 @@ GeoMashup.loadMap = function() {
 				} // end for each marker
 				if (GeoMashup.firstLoad) {
 					GeoMashup.firstLoad = false;
-					GeoMashup.clickCenterMarker();
+					if (GeoMashup.autoOpenInfoWindow) {
+						GeoMashup.clickCenterMarker();
+					}
 				}
 			} // end readystate == 4
 		} // end onreadystatechange function
