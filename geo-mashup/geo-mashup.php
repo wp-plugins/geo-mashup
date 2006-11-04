@@ -46,6 +46,9 @@ class GeoMashup {
 				// Generate map style
 				echo '
 				<style type="text/css">
+				v\:* {
+					behavior:url(#default#VML);
+				}
 				#geoMashup {';
 				if ($geoMashupOpts['map_width']) {
 					echo '
@@ -233,8 +236,9 @@ class GeoMashup {
 			<div class="updated">
 				<p>The <a href="http://dev.wp-plugins.org/wiki/GeoPlugin">Geo Plugin</a> needs to be installed 
 				and activated for Geo Mashup to work, but it wasn\'t found. We\'ll go on anyway and hope for the best...</p>
-				<p>Here is the array of plugins WordPress says are active:<pre>'.
-				print_r($activePlugins, true).'</pre>
+				<p>Here is the array of plugins WordPress says are active:<pre>';
+			print_r($activePlugins);
+			echo '</pre>
 				If Geo is active, this list should contain geo.php. </p>
 			</div>';
 		}
@@ -283,12 +287,16 @@ class GeoMashup {
 		$pageSlugOptions = "";
 		$pageSlugs = $wpdb->get_col("SELECT DISTINCT post_name FROM $wpdb->posts " .
 			"WHERE post_status='static' ORDER BY post_name");
-		foreach($pageSlugs as $slug) {
-			$selected = "";
-			if ($slug == $geoMashupOpts['mashup_page']) {
-				$selected = ' selected="true"';
+		if ($pageSlugs) {
+			foreach($pageSlugs as $slug) {
+				$selected = "";
+				if ($slug == $geoMashupOpts['mashup_page']) {
+					$selected = ' selected="true"';
+				}
+				$pageSlugOptions .= '<option value="'.$slug.'"'.$selected.'>'.$slug."</option>\n";
 			}
-			$pageSlugOptions .= '<option value="'.$slug.'"'.$selected.'>'.$slug."</option>\n";
+		} else {
+			$pageSlugOptions = '<option value="">No pages found</option>';
 		}
 
 		$mapTypeOptions = "";
