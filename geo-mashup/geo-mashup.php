@@ -147,6 +147,10 @@ class GeoMashup {
 				echo '
 				GeoMashup.loadZoom = '.$_GET['zoom'].';';
 			}
+			if ($geoMashupOpts['auto_info_open'] == 'true') {
+				echo '
+				GeoMashup.autoOpenInfoWindow = true;';
+			}
 			$custom_marker_file = dirname(__FILE__).'/custom-marker.js';
 			if (is_readable($custom_marker_file)) {
 				readfile($custom_marker_file);
@@ -252,6 +256,7 @@ class GeoMashup {
 			$geoMashupOpts['show_post'] = 'false';
 			$geoMashupOpts['show_log'] = 'false';
 			$geoMashupOpts['show_future'] = 'false';
+			$geoMashupOpts['auto_info_open'] = 'false';
 			foreach($_POST as $name => $value) {
 				$geoMashupOpts[$name] = $value;
 			}
@@ -278,6 +283,9 @@ class GeoMashup {
 			}
 			if (!isset($geoMashupOpts['add_map_type_control'])) {
 				$geoMashupOpts['add_map_type_control'] = 'true';
+			}
+			if (!isset($geoMashupOpts['auto_info_open'])) {
+				$geoMashupOpts['auto_info_open'] = 'true';
 			}
 			update_option('geo_mashup_options', $geoMashupOpts);
 			echo '<div class="updated"><p>'.__('Defaults set.', 'GeoMashup').'</p></div>';
@@ -372,7 +380,12 @@ class GeoMashup {
 			$textExcerptChecked = '';
 			$htmlExcerptChecked = ' checked="true"';
 		}
-		
+		if ($geoMashupOpts['auto_info_open'] == 'true') {
+			$autoInfoOpenChecked = ' checked="true"';
+		} else {
+			$autoInfoOpenChecked = '';
+		}
+	
 		// Write the form
 		echo '
 		<div class="wrap">
@@ -420,6 +433,10 @@ class GeoMashup {
 						<tr>
 							<th scope="row">'.__('Show Future Posts', 'GeoMashup').'</th>
 							<td><input id="show_future" name="show_future" type="checkbox" value="true"'.$showFutureChecked.' /></td>
+						</tr>
+						<tr>
+							<th scope="row">'.__('Automatically Open the Center Info Window', 'GeoMashup').'</th>
+							<td><input id="auto_info_open" name="auto_info_open" type="checkbox" value="true"'.$autoInfoOpenChecked.' /></td>
 						</tr>
 						<tr>
 							<th scope="row">'.__('Enable Full Post Display', 'GeoMashup').'</th>
