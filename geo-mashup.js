@@ -238,7 +238,7 @@ GeoMashup.loadMap = function() {
 		}
 		request.open("GET", url, true);
 		request.onreadystatechange = function() {
-			GeoMashup.log('Request state ' + request.readyState + ', status ' + request.status);
+			GeoMashup.log('Request state ' + request.readyState);
 			if (request.readyState == 4) {
 				var xmlDoc = request.responseXML;
 				var markers = xmlDoc.getElementsByTagName("marker");
@@ -358,6 +358,11 @@ GeoMashup.loadMap = function() {
 
 	if (this.addCategoryControl) {
 		this.map.addControl(new GeoMashupCategoryControl());
+	}
+
+	if (this.customizeMap) {
+		this.log('The customizeMap user function exists, call it');
+		this.customizeMap();
 	}
 
 } // end loadMap();
