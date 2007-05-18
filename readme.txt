@@ -18,10 +18,9 @@ optionally be displayed on the map page.
 
  * There's a powerful map search admin interface for adding location to posts
  * GeoRSS is added to your feeds
- * The map can be tailored to your categories
- * For an example, see [http://www.cyberhobo.net/hobomap my hobomap].
+ * For an example, see [my hobomap](http://www.cyberhobo.net/hobomap).
 
 == More ==
 
-All Geo Mashup information can be reached from [http://www.cyberhobo.net/downloads/geo-mashup-plugin the Geo Mashup home page].
+All Geo Mashup information can be reached from [the Geo Mashup home page](http://www.cyberhobo.net/downloads/geo-mashup-plugin).
 
