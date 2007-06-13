@@ -19,6 +19,7 @@ optionally be displayed on the map page.
  * There's a powerful map search admin interface for adding location to posts
  * GeoRSS is added to your feeds
  * For an example, see [my hobomap](http://www.cyberhobo.net/hobomap).
+ * Beta versions and more on [the project page](http://code.google.com/p/wordpress-geo-mashup/).
 
 == More ==
 
