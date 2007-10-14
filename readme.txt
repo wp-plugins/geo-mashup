@@ -2,8 +2,8 @@
 Contributors: cyberhobo
 Donate link: http://www.cyberhobo.net/money/
 Tags: map, maps, google, geo, mashup, mapping
-Requires at least: 2.0
-Tested up to: 2.2
+Requires at least: 2.3
+Tested up to: 2.3
 Stable tag: trunk
 
 Plots your posts on a master Google map with summaries in the info window, and
