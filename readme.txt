@@ -1,7 +1,7 @@
 === Geo Mashup ===
 Contributors: cyberhobo
 Donate link: http://www.cyberhobo.net/money/
-Tags: map, maps, google, geo, mashup, mapping
+Tags: map, maps, google, geo, mashup, mapping, google map, google maps
 Requires at least: 2.3
 Tested up to: 2.3
 Stable tag: trunk
