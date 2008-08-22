@@ -6,7 +6,7 @@ Requires at least: 2.5.1
 Tested up to: 2.6.1
 Stable tag: trunk
 
-Include Google maps in posts and pages, and plot posts and pages on global maps.
+Include Google maps in posts and pages, and map posts and pages on global maps. Mapping with KML attachments supported.
 
 == Description ==
 
