@@ -3,7 +3,7 @@ Contributors: cyberhobo
 Donate Link: http://www.cyberhobo.net/downloads/geo-mashup-plugin/
 Tags: map, maps, google maps, google map, mapping, mashup, geo, google
 Requires at least: 2.5.1
-Tested up to: 2.6.1
+Tested up to: 2.7
 Stable tag: trunk
 
 Include Google maps in posts and pages, and map posts and pages on global maps. Mapping with KML attachments supported.
