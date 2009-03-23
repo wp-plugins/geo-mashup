@@ -13,6 +13,10 @@ Include Google maps in posts and pages, and map posts and pages on global maps. 
 This plugin allows you to include Google maps in WordPress posts and pages, and
 map posts and pages on global maps.
 
+= Alert =
+
+If you are running MySql 4, please wait for version 1.2.1 before upgrading. It should be out soon.
+
 = Features =
 
 The number of features has grown beyond the limits of a short list. If you need
