@@ -103,6 +103,8 @@ function geo_mashup_options_page()
 	$categoryTable .= "</table>\n";
 
 	$mapTypeOptions = "";
+	$inPostMapTypeOptions = "";
+	$contextMapTypeOptions = "";
 	$mapTypes = Array(
 		'G_NORMAL_MAP' => __('Roadmap', 'GeoMashup'), 
 		'G_SATELLITE_MAP' => __('Satellite', 'GeoMashup'),
@@ -173,19 +175,19 @@ function geo_mashup_options_page()
 	if ($geo_mashup_options->get ( 'global_map', 'add_overview_control' ) == 'true') {
 		$overviewChecked = ' checked="true"';
 	} else {
-		$overviewmapChecked = '';
+		$overviewChecked = '';
 	}
 
 	if ($geo_mashup_options->get ( 'single_map', 'add_overview_control' ) == 'true') {
 		$inPostOverviewChecked = ' checked="true"';
 	} else {
-		$inPostOverviewmapChecked = '';
+		$inPostOverviewChecked = '';
 	}
 
 	if ($geo_mashup_options->get ( 'context_map', 'add_overview_control' ) == 'true') {
 		$contextOverviewChecked = ' checked="true"';
 	} else {
-		$contextOverviewmapChecked = '';
+		$contextOverviewChecked = '';
 	}
 
 	if ($geo_mashup_options->get ( 'overall', 'add_category_links' ) == 'true') {
@@ -473,6 +475,14 @@ function geo_mashup_options_page()
 				<div class="submit"><input type="submit" name="submit" value="<?php _e('Update Options', 'GeoMashup'); ?>" /></div>
 			</fieldset>
 		</form>
+		<?php if ( isset( $_GET['view_activation_log'] ) ) : ?>
+		<div class="updated">
+			<p><strong><?php _e( 'Activation Log', 'GeoMashup' ); ?></strong></p>
+			<?php echo get_option( 'geo_mashup_activation_log' ) ?> 
+		</div>
+		<?php else : ?>
+		<p><a href="<?php echo $_SERVER['REQUEST_URI']; ?>&view_activation_log=1"><?php _e('View Activation Log', 'GeoMashup'); ?></a></p>
+		<?php endif; ?>
 		<p><a href="http://code.google.com/p/wordpress-geo-mashup/wiki/Documentation"><?php _e('Geo Mashup Documentation', 'GeoMashup'); ?></a></p>
 	</div>
 <?php
