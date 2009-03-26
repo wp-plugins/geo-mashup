@@ -16,8 +16,9 @@ map posts and pages on global maps.
 = Features =
 
 The number of features has grown beyond the limits of a short list. If you need
-features that are aren't listed here, check the documentation and the Tag
-Reference. Some popular features are:
+features that are aren't listed here, check [the documentation](http://code.google.com/p/wordpress-geo-mashup/wiki/Documentation) 
+and the [tag reference](http://code.google.com/p/wordpress-geo-mashup/wiki/TagReference). 
+Some popular features are:
 
 * Once you have a [Google Maps API key](http://www.google.com/apis/maps/signup.html), 
   you're ready to put maps just about anywhere in your blog.
@@ -45,7 +46,7 @@ Reference. Some popular features are:
 * Many more [enhancement requests](http://code.google.com/p/wordpress-geo-mashup/issues/list?can=2&amp;q=type:Enhancement&amp;colspec=ID%20Type%20Status%20Priority%20Milestone%20Owner%20Summary) 
   implemented and underway.
 
-= New Features = 
+= Beta Features = 
 
 There are often two versions of the plugin available, stable and beta. The beta
 version includes all the stable version features, and also new features that
