@@ -64,7 +64,7 @@ to create a GeoCMS that puts you in control of all your content, including geogr
 I would like to make WordPress a first-class GeoCMS, and also make working with
 maps in your blog as easy as working with images.
 
-Geo Mashup has made it this far on the [customization work](http://www.cyberhobo.net/money) 
+Geo Mashup has made it this far on the [customization work](http://www.cyberhobo.net/hire-me/) 
 and [donations](http://www.cyberhobo.net/downloads/geo-mashup-plugin) it has
 brought my way. As a freelance web developer I spend time on Geo Mashup when I
 can, and look for work elsewhere when I must.
