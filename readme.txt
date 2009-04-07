@@ -21,7 +21,7 @@ and the [tag reference](http://code.google.com/p/wordpress-geo-mashup/wiki/TagRe
 Some popular features are:
 
 * Once you have a [Google Maps API key](http://www.google.com/apis/maps/signup.html), 
-  you're ready to put maps just about anywhere in your blog.
+  you're ready to put maps just about anywhere on your site.
 
 * Global maps can present your posts in many ways
 
