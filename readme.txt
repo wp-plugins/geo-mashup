@@ -13,6 +13,12 @@ Include Google maps in posts and pages, and map posts and pages on global maps. 
 This plugin allows you to include Google maps in WordPress posts and pages, and
 map posts and pages on global maps.
 
+In WordPress 2.7 and higher, you can upgrade to a new stable version right
+from the Plugins list via the "upgrade automatically" link. *This will delete
+files you've created in the geo-mashup folder, like custom.js, or
+info-window.php.* I'm searching for a solution to this, but for now it's
+probably best to use FTP if you have these files.
+
 = Features =
 
 The number of features has grown beyond the limits of a short list. If you need
