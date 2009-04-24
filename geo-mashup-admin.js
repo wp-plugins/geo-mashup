@@ -147,7 +147,11 @@ var GeoMashupAdmin = {
 		}
 		if (opts.post_lat && opts.post_lng) {
 			var latlng = new GLatLng(opts.post_lat, opts.post_lng);
-			this.addSelectedMarker(latlng,opts.post_location_name);
+			var loc = { 
+				location_id : this.location_id_input.value, 
+				name : opts.post_location_name
+			};
+			this.addSelectedMarker(latlng, loc);
 		}
 
 		GEvent.bind(this.map,'click',this,this.onclick);
@@ -267,7 +271,7 @@ var GeoMashupAdmin = {
 	setInputs : function (latlng, loc) {
 		var latlng_string = latlng.lat() + ',' + latlng.lng();
 		if ((this.location_id_input.value != loc.id) || (this.location_input.value != latlng_string)) {
-			this.location_id_input.value = loc.id;
+			this.location_id_input.value = loc.id ? loc.id : '';
 			this.location_input.value = latlng_string;
 			this.geoname_input.value = loc.geoname;
 			this.address_input.value = loc.address;
