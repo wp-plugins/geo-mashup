@@ -16,8 +16,9 @@ map posts and pages on global maps.
 In WordPress 2.7 and higher, you can upgrade to a new stable version right
 from the Plugins list via the "upgrade automatically" link. *This will delete
 files you've created in the geo-mashup folder, like custom.js, or
-info-window.php.* I'm searching for a solution to this, but for now it's
-probably best to use FTP if you have these files.
+info-window.php.* If you have files like these, please look at the 
+[upgrade considerations](http://code.google.com/p/wordpress-geo-mashup/wiki/UpgradeConsiderations)
+for the best way to keep your custom files safe moving forward.
 
 = Features =
 

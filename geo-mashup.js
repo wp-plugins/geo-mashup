@@ -274,11 +274,18 @@ var GeoMashup = {
 		return html_array.join('');
 	},
 
-	categoryIndexHtml : function(category_id, children) {
+	categoryIndexHtml : function(category_id, children, top_level) {
 		var html_array = [];
+		if ( typeof top_level === 'undefined' ) {
+			top_level = true;
+		}
 		html_array.push('<div id="');
 		html_array.push(this.categoryIndexId(category_id));
-		html_array.push('" class="gm-tabs-panel gm-hidden"><ul class="gm-index-posts">');
+		html_array.push('" class="gm-tabs-panel');
+		if ( top_level ) {
+			html_array.push(' gm-hidden');
+		}
+		html_array.push('"><ul class="gm-index-posts">');
 		if (this.categories[category_id]) {
 			this.categories[category_id].posts.sort(function (a, b) {
 				var a_name = GeoMashup.posts[a].title;
@@ -308,7 +315,8 @@ var GeoMashup = {
 			}
 			html_array.push('<span class="gm-sub-cat-title">');
 			html_array.push(this.opts.category_opts[child_id].name);
-			html_array.push(this.categoryIndexHtml(child_id, children[child_id]));
+			html_array.push('</span>');
+			html_array.push(this.categoryIndexHtml(child_id, children[child_id], false));
 			html_array.push('</li>');
 			group_count++;
 			if (this.opts.tab_index_group_size && group_count%this.opts.tab_index_group_size == 0) {
@@ -354,11 +362,12 @@ var GeoMashup = {
 
 		legend_html = ['<', list_tag, ' class="gm-legend">'];
 		for (category_id in this.categories) {
-			this.categories[category_id].line = new GPolyline(this.categories[category_id].points, 
-				this.categories[category_id].color);
-			this.map.addOverlay(this.categories[category_id].line);
-			if (this.map.getZoom() > this.categories[category_id].max_line_zoom) {
-				this.categories[category_id].line.hide();
+			if ( this.categories[category_id].max_line_zoom ) {
+				this.categories[category_id].line = new GPolyline(this.categories[category_id].points, 
+					this.categories[category_id].color);
+				if (this.map.getZoom() <= this.categories[category_id].max_line_zoom) {
+					this.map.addOverlay(this.categories[category_id].line);
+				}
 			}
 			if (legend_element) {
 				// Default is interactive
@@ -594,7 +603,7 @@ var GeoMashup = {
 		}
 		this.map.closeInfoWindow();
 		if (this.categories[category_id].line) {
-			this.categories[category_id].line.hide();
+			this.map.addOverlay( this.categories[category_id].line );
 		}
 		for (var i=0; i<this.categories[category_id].points.length; i++) {
 			var point = this.categories[category_id].points[i];
@@ -609,7 +618,7 @@ var GeoMashup = {
 			return false;
 		}
 		if (this.categories[category_id].line && this.map.getZoom() <= this.categories[category_id].max_line_zoom) {
-			this.categories[category_id].line.show();
+			this.map.removeOverlay( this.categories[category_id].line );
 		}
 		for (var i=0; i<this.categories[category_id].points.length; i++) {
 			var point = this.categories[category_id].points[i];
@@ -624,7 +633,7 @@ var GeoMashup = {
 			for (category_id in this.categories) {
 				this.categories[category_id].points.length = 0;
 				if (this.categories[category_id].line) {
-					this.categories[category_id].line.hide();
+					this.map.removeOverlay( this.categories[category_id].line );
 				}
 			}
 		}
@@ -680,6 +689,7 @@ var GeoMashup = {
 			if (this.opts.auto_info_open && this.opts.open_post_id) {
 				this.clickMarker(this.opts.open_post_id);
 			}
+			this.updateVisibleList();
 		}
 	},
 
@@ -736,13 +746,15 @@ var GeoMashup = {
 			this.showMarkers();
 		}
 		for (category_id in this.categories) {
-			if (old_level <= this.categories[category_id].max_line_zoom &&
-			  new_level > this.categories[category_id].max_line_zoom) {
-				this.categories[category_id].line.hide();
-			} else if (this.categories[category_id].visible &&
-				old_level > this.categories[category_id].max_line_zoom &&
-			  new_level <= this.categories[category_id].max_line_zoom) {
-				this.categories[category_id].line.show();
+			if ( this.categories[category_id].line ) {
+				if (old_level <= this.categories[category_id].max_line_zoom &&
+					new_level > this.categories[category_id].max_line_zoom) {
+					this.map.removeOverlay( this.categories[category_id].line );
+				} else if (this.categories[category_id].visible &&
+					old_level > this.categories[category_id].max_line_zoom &&
+					new_level <= this.categories[category_id].max_line_zoom) {
+					this.map.addOverlay( this.categories[category_id].line );
+				}
 			}
 		}
 	},

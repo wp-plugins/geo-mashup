@@ -2,7 +2,7 @@
 Plugin Name: Geo Mashup
 Plugin URI: http://code.google.com/p/wordpress-geo-mashup/ 
 Description: Tools for adding maps to your blog, and plotting posts on a master map. Configure in <a href="options-general.php?page=geo-mashup/geo-mashup.php">Settings->Geo Mashup</a> after the plugin is activated. Documentation is <a href="http://code.google.com/p/wordpress-geo-mashup/wiki/Documentation">on the project site</a>.
-Version: 1.2.4
+Version: 1.2.5
 Author: Dylan Kuhn
 Author URI: http://www.cyberhobo.net/
 Minimum WordPress Version Required: 2.6
@@ -85,7 +85,7 @@ class GeoMashup {
 		define('GEO_MASHUP_URL_PATH', WP_CONTENT_URL . '/plugins/' . GEO_MASHUP_DIRECTORY);
 		define('GEO_MASHUP_MAX_ZOOM', 20);
 		// This version is for javascripts. WP wants numbers, so it's incremented for betas too.
-		define('GEO_MASHUP_VERSION', '1.2.6');
+		define('GEO_MASHUP_VERSION', '1.2.7');
 		define('GEO_MASHUP_DB_VERSION', '1.2');
 	}
 
@@ -547,26 +547,29 @@ class GeoMashup {
 			}
 			$states = GeoMashupDB::get_distinct_located_values( 'admin_code', $country->country_code );
 			foreach ($states  as $state ) { 
-				$list_html .= '<h4>' . 
-					GeoMashupDB::get_administrative_name( $country->country_code, $state->admin_code ) . 
-					'</h4><ul class="gm-index-posts">';
 				$location_query = array( 
 					'country_code' => $country->country_code,
-					'admin_code' => $state->admin_code 
+					'admin_code' => $state->admin_code,
+					'sort' => 'post_title'
 				);
 				$post_locations = GeoMashupDB::get_post_locations( $location_query );
-				foreach ( $post_locations as $post_location ) { 
-					$list_html .= '<li><a href="' . 
-						get_permalink( $post_location->post_id ) .
-						'">' .
-						$post_location->post_title .
-						'</a>';
-					if ( isset( $args['include_address'] ) && $args['include_address'] == 'true' ) {
-						$list_html .= '<p>' . $post_location->address . '</p>';
+				if ( count( $post_locations ) > 0 ) {
+					$list_html .= '<h4>' . 
+						GeoMashupDB::get_administrative_name( $country->country_code, $state->admin_code ) . 
+						'</h4><ul class="gm-index-posts">';
+					foreach ( $post_locations as $post_location ) { 
+						$list_html .= '<li><a href="' . 
+							get_permalink( $post_location->post_id ) .
+							'">' .
+							$post_location->post_title .
+							'</a>';
+						if ( isset( $args['include_address'] ) && $args['include_address'] == 'true' ) {
+							$list_html .= '<p>' . $post_location->address . '</p>';
+						}
+						$list_html .= '</li>';
 					}
-					$list_html .= '</li>';
+					$list_html .= '</ul>';
 				}
-				$list_html .= '</ul>';
 			}
 		}
 		$list_html .= '</div>';
