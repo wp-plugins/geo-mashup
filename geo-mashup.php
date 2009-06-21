@@ -2,7 +2,7 @@
 Plugin Name: Geo Mashup
 Plugin URI: http://code.google.com/p/wordpress-geo-mashup/ 
 Description: Tools for adding maps to your blog, and plotting posts on a master map. Configure in <a href="options-general.php?page=geo-mashup/geo-mashup.php">Settings->Geo Mashup</a> after the plugin is activated. Documentation is <a href="http://code.google.com/p/wordpress-geo-mashup/wiki/Documentation">on the project site</a>.
-Version: 1.2.5
+Version: 1.2.6
 Author: Dylan Kuhn
 Author URI: http://www.cyberhobo.net/
 Minimum WordPress Version Required: 2.6
@@ -85,7 +85,7 @@ class GeoMashup {
 		define('GEO_MASHUP_URL_PATH', WP_CONTENT_URL . '/plugins/' . GEO_MASHUP_DIRECTORY);
 		define('GEO_MASHUP_MAX_ZOOM', 20);
 		// This version is for javascripts. WP wants numbers, so it's incremented for betas too.
-		define('GEO_MASHUP_VERSION', '1.2.7');
+		define('GEO_MASHUP_VERSION', '1.2.8');
 		define('GEO_MASHUP_DB_VERSION', '1.2');
 	}
 
@@ -218,14 +218,7 @@ class GeoMashup {
 
 	function admin_print_scripts($not_used)
 	{
-		if ( isset($_GET['page']) && GEO_MASHUP_PLUGIN_NAME === $_GET['page'] ) {
-
-			echo '
-				<script type="text/javascript"> 
-					addLoadEvent(function() { jQuery("#geo-mashup-settings-form > ul").tabs(); }); 
-				</script>';
-
-		} else if (strpos($_SERVER['REQUEST_URI'], 'upload.php') > 0) {
+		if (strpos($_SERVER['REQUEST_URI'], 'upload.php') > 0) {
 			// Load any uploaded KML into the search map - only works with browser uploader
 
 			$kml_url = get_option('geo_mashup_temp_kml_url');

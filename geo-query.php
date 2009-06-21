@@ -2,6 +2,32 @@
 
 require_once('../../../wp-blog-header.php');
 
+/**
+ * Establish locate_template for WP 2.6.
+ */
+if ( !function_exists( 'locate_template' ) ) {
+	function locate_template($template_names, $load = false) {
+		if (!is_array($template_names))
+			return '';
+
+		$located = '';
+		foreach($template_names as $template_name) {
+			if ( file_exists(STYLESHEETPATH . '/' . $template_name)) {
+				$located = STYLESHEETPATH . '/' . $template_name;
+				break;
+			} else if ( file_exists(TEMPLATEPATH . '/' . $template_name) ) {
+				$located = TEMPLATEPATH . '/' . $template_name;
+				break;
+			}
+		}
+
+		if ($load && '' != $located)
+			load_template($located);
+
+		return $located;
+	}
+}
+
 if ( empty( $_GET['post_ids'] ) ) {
 	GeoMashupQuery::generate_location_json( );
 } else {
@@ -21,7 +47,7 @@ class GeoMashupQuery {
 			$post_ids = split( ',', $post_ids );
 		}
 
-		$query_vars = array( 'post__in' => $post_ids, 'post_type' => 'any' );
+		$query_vars = array( 'post__in' => $post_ids, 'post_type' => 'any', 'post_status' => 'publish,future' );
 		// Don't filter this query through other plugins (e.g. event-calendar)
 		$query_vars['suppress_filters'] = true;
 		// No sticky posts please
