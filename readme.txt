@@ -3,7 +3,7 @@ Contributors: cyberhobo
 Donate Link: http://www.cyberhobo.net/downloads/geo-mashup-plugin/
 Tags: map, maps, google maps, google map, mapping, mashup, geo, google, geocms
 Requires at least: 2.6
-Tested up to: 2.8
+Tested up to: 2.8.4
 Stable tag: trunk
 
 Include Google maps in posts and pages, and map posts and pages on global maps. Make WordPress into a GeoCMS.
@@ -50,8 +50,15 @@ Some popular features are:
 
 * Connect category markers with a colored line
 
-* Many more [enhancement requests](http://code.google.com/p/wordpress-geo-mashup/issues/list?can=2&amp;q=type:Enhancement&amp;colspec=ID%20Type%20Status%20Priority%20Milestone%20Owner%20Summary) 
-  implemented and underway.
+* Many more [enhancement requests][enh] implemented and underway.
+
+[enh]: http://code.google.com/p/wordpress-geo-mashup/issues/list?can=2&amp;q=type:Enhancement&amp;colspec=ID%20Type%20Status%20Priority%20Milestone%20Owner%20Summary 
+
+= Translations =
+
+* Belorussian by [FatCow](http://www.fatcow.com) added in version 1.2.8
+* French added in version 1.1
+* German by Michel Honold added in version 1.1.3
 
 = Beta Features = 
 
@@ -79,3 +86,75 @@ can, and look for work elsewhere when I must.
 == Installation ==
 
 See [the documentation](http://code.google.com/p/wordpress-geo-mashup/wiki/Documentation).
+
+== Change Log ==
+
+= 1.2.8 =
+[list](http://code.google.com/p/wordpress-geo-mashup/issues/list?can=1&q=Milestone%3D1.2.8)
+
+= 1.2.7 =
+Fixed:
+
+* [Issue 228][228] Inline location (geo_mashup_save_location) not working
+* [Issue 219][219] locate_template() undefined in WordPress 2.6
+* Adjusted sub-cat titles in the tabbed index control to show only when they have located children
+
+[228]: http://code.google.com/p/wordpress-geo-mashup/issues/detail?id=228
+[219]: http://code.google.com/p/wordpress-geo-mashup/issues/detail?id=219
+
+= 1.2.6 =
+Fixed:
+
+* [Issue 226][226] Wrong icons in the visible post list
+* [Issue 227][227] No info window for future posts
+
+[226]: http://code.google.com/p/wordpress-geo-mashup/issues/detail?id=226
+[227]: http://code.google.com/p/wordpress-geo-mashup/issues/detail?id=227
+
+= 1.2.5 =
+Fixed:
+
+* [Issue 208][208] Category lines gone crazy
+* [Issue 199][199] Upgrades overwrite custom files
+
+[208]: http://code.google.com/p/wordpress-geo-mashup/issues/detail?id=208
+[199]: http://code.google.com/p/wordpress-geo-mashup/issues/detail?id=199
+
+= 1.2.4 =
+Fixed:
+
+* [Issue 194][194] Post locations not saving
+
+[194]: http://code.google.com/p/wordpress-geo-mashup/issues/detail?id=194
+
+= 1.2.3 = 
+Fixed:
+
+* [Issue 185][185] Sticky posts appear in all info windows
+* [Issue 183][183] Percentage not allowed for width settings
+
+[185]: http://code.google.com/p/wordpress-geo-mashup/issues/detail?id=185
+[183]: http://code.google.com/p/wordpress-geo-mashup/issues/detail?id=183
+
+= 1.2.2 = 
+Fixed:
+
+* [Issue 181][181] Marker is not showing up after update
+* [Issue 177][177] Info window for post not loading (spinning wait icon) 
+
+[181]: http://code.google.com/p/wordpress-geo-mashup/issues/detail?id=181
+[177]: http://code.google.com/p/wordpress-geo-mashup/issues/detail?id=177
+
+= 1.2.1 =
+Fixed:
+
+* MySQL 4 incompatibilities
+
+= 1.2 =
+
+* [New features][ddoc12beta1] and 
+* [more new features][ddoc12beta2].
+
+[ddoc12beta1]: http://code.google.com/p/wordpress-geo-mashup/wiki/DocChangesForOneTwoBetaOne
+[ddoc12beta2]: http://code.google.com/p/wordpress-geo-mashup/wiki/DocChangesForOneTwoBetaTwo#New_Features
+

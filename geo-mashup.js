@@ -312,10 +312,10 @@ var GeoMashup = {
 				html_array.push('<img src="');
 				html_array.push(this.categories[child_id].icon.image);
 				html_array.push('" />');
+				html_array.push('<span class="gm-sub-cat-title">');
+				html_array.push(this.opts.category_opts[child_id].name);
+				html_array.push('</span>');
 			}
-			html_array.push('<span class="gm-sub-cat-title">');
-			html_array.push(this.opts.category_opts[child_id].name);
-			html_array.push('</span>');
 			html_array.push(this.categoryIndexHtml(child_id, children[child_id], false));
 			html_array.push('</li>');
 			group_count++;
@@ -442,7 +442,7 @@ var GeoMashup = {
 
 	directLink : function(element) {
 		this.saveBackSettings();
-		if (parent) {
+		if ( parent && ( element.target.length === 0 || element.target === '_self' ) ) {
 			element.target = '_parent';
 		}
 		return true;
@@ -943,7 +943,9 @@ var GeoMashup = {
 		}
 
 		if (opts.add_overview_control) {
-			this.map.addControl(new GOverviewMapControl());
+			this.overview_control = new GOverviewMapControl();
+			this.overview_control.setMapType( opts.map_type );
+			this.map.addControl( this.overview_control );
 			var ov = document.getElementById('gm-overview');
 			if (ov) {
 				ov.style.position = 'absolute';
