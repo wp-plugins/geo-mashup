@@ -442,7 +442,7 @@ var GeoMashup = {
 
 	directLink : function(element) {
 		this.saveBackSettings();
-		if (parent) {
+		if ( parent && ( element.target.length === 0 || element.target === '_self' ) ) {
 			element.target = '_parent';
 		}
 		return true;
@@ -943,7 +943,9 @@ var GeoMashup = {
 		}
 
 		if (opts.add_overview_control) {
-			this.map.addControl(new GOverviewMapControl());
+			this.overview_control = new GOverviewMapControl();
+			this.overview_control.setMapType( opts.map_type );
+			this.map.addControl( this.overview_control );
 			var ov = document.getElementById('gm-overview');
 			if (ov) {
 				ov.style.position = 'absolute';
