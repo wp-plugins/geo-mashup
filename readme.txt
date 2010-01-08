@@ -3,7 +3,7 @@ Contributors: cyberhobo
 Donate Link: http://www.cyberhobo.net/downloads/geo-mashup-plugin/
 Tags: map, maps, google maps, google map, mapping, mashup, geo, google, geocms
 Requires at least: 2.6
-Tested up to: 2.8.4
+Tested up to: 2.9.1
 Stable tag: trunk
 
 Include Google maps in posts and pages, and map posts and pages on global maps. Make WordPress into a GeoCMS.
@@ -12,6 +12,8 @@ Include Google maps in posts and pages, and map posts and pages on global maps. 
 
 This plugin allows you to include Google maps in WordPress posts and pages, and
 map posts and pages on global maps.
+
+= Upgrading =
 
 In WordPress 2.7 and higher, you can upgrade to a new stable version right
 from the Plugins list via the "upgrade automatically" link. *This will delete
@@ -56,9 +58,10 @@ Some popular features are:
 
 = Translations =
 
+* Italian by [Stefan Des](http://www.stefandes.com/) added in version 1.2.9
 * Belorussian by [FatCow](http://www.fatcow.com) added in version 1.2.8
-* French added in version 1.1
 * German by Michel Honold added in version 1.1.3
+* French added in version 1.1
 
 = Beta Features = 
 
@@ -88,6 +91,9 @@ can, and look for work elsewhere when I must.
 See [the documentation](http://code.google.com/p/wordpress-geo-mashup/wiki/Documentation).
 
 == Change Log ==
+
+= 1.2.9 =
+[list](http://code.google.com/p/wordpress-geo-mashup/issues/list?can=1&q=Milestone%3D1.2.9)
 
 = 1.2.8 =
 [list](http://code.google.com/p/wordpress-geo-mashup/issues/list?can=1&q=Milestone%3D1.2.8)
