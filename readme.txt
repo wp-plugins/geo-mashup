@@ -15,8 +15,8 @@ map posts and pages on global maps.
 
 = Upgrading =
 
-In WordPress 2.7 and higher, you can upgrade to a new stable version right
-from the Plugins list via the "upgrade automatically" link. *This will delete
+If you upgrade to a new stable version from the Plugins list via the 
+"upgrade automatically" link, *this will delete
 files you've created in the geo-mashup folder, like custom.js, or
 info-window.php.* If you have files like these, please look at the 
 [upgrade considerations](http://code.google.com/p/wordpress-geo-mashup/wiki/UpgradeConsiderations)
