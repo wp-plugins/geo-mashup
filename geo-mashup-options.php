@@ -1,6 +1,25 @@
 <?php
+/**
+ * Management of Geo Mashup saved options.
+ *
+ * @package GeoMashup
+ */
 
+/**
+ * A singleton to manage Geo Mashup saved options.
+ * 
+ * @since 1.2
+ * @access public
+ * @package GeoMashup
+ */
 class GeoMashupOptions {
+	/**
+	 * Valid options with default values.
+	 * 
+	 * @since 1.2
+	 * @access public
+	 * @var array
+	 */
 	var $default_options = array (
 		'overall' => array (
 			'google_key' => '',
@@ -9,7 +28,13 @@ class GeoMashupOptions {
 			'category_link_text' => 'map',
 			'category_zoom' => '7',
 			'add_category_links' => 'false',
-			'theme_stylesheet_with_maps' => 'false' ),
+			'theme_stylesheet_with_maps' => 'false',
+			'located_object_name' => array ( 
+				'post' => 'true',
+				'user' => 'false',
+				'comment' => 'false' ),
+			'enable_reverse_geocoding' => 'true',
+			'adsense_code' => 'partner-pub-5088093001880917' ),
 		'global_map' => array (
 			'width' => '400',
 			'height' => '400',
@@ -18,17 +43,22 @@ class GeoMashupOptions {
 			'background_color' => 'c0c0c0',
 			'category_color' => array ( ),
 			'category_line_zoom' => array ( ),
-			'marker_min_zoom' => '',
 			'map_control' => 'GSmallZoomControl3D',
-			'add_map_type_control' => 'true',
+			'add_map_type_control' => array(),
 			'add_overview_control' => 'false',
+			'add_google_bar' => 'true',
+			'enable_scroll_wheel_zoom' => 'false',
 			'show_post' => 'false',
 			'show_future' => 'false',
-			'marker_min_zoom' => '',
+			'marker_select_info_window' => 'true',
+			'marker_select_highlight' => 'false',
+			'marker_select_center' => 'false',
+			'marker_select_attachments' => 'false',
 			'max_posts' => '',
 			'auto_info_open' => 'true',
 			'click_to_load' => 'false',
-			'click_to_load_text' => '' ),
+			'click_to_load_text' => '',
+	 		'cluster_max_zoom' => ''	),
 		'single_map' => array (
 			'width' => '400',
 			'height' => '400',
@@ -37,7 +67,9 @@ class GeoMashupOptions {
 			'zoom' => '11',
 			'background_color' => 'c0c0c0',
 			'add_overview_control' => 'false',
-			'add_map_type_control' => 'true',
+			'add_map_type_control' => array(),
+			'add_google_bar' => 'true',
+			'enable_scroll_wheel_zoom' => 'false',
 			'click_to_load' => 'false',
 	 		'click_to_load_text' => '' ), 
 		'context_map' => array (
@@ -48,9 +80,23 @@ class GeoMashupOptions {
 			'zoom' => '7',
 			'background_color' => 'c0c0c0',
 			'add_overview_control' => 'false',
-			'add_map_type_control' => 'false',
+			'add_map_type_control' => array(),
+			'add_google_bar' => 'true',
+			'enable_scroll_wheel_zoom' => 'false',
+			'marker_select_info_window' => 'true',
+			'marker_select_highlight' => 'false',
+			'marker_select_center' => 'false',
+			'marker_select_attachments' => 'false',
 			'click_to_load' => 'false',
 	 		'click_to_load_text' => '' ) );
+
+	/**
+	 * Map of old option names to new ones.
+	 * 
+	 * @since 1.2
+	 * @access private
+	 * @var array
+	 */
 	var $conversions = array (
 		'google_key' => array ( 'overall', 'google_key' ),
 		'mashup_page' => array ( 'overall', 'mashup_page' ),
@@ -65,13 +111,11 @@ class GeoMashupOptions {
 		'zoom_level' => array ( 'global_map', 'zoom' ),
 		'category_color' => array ( 'global_map', 'category_color' ),
 		'category_line_zoom' => array ( 'global_map', 'category_line_zoom' ),
-		'marker_min_zoom' => array ( 'global_map', 'marker_min_zoom' ),
 		'map_control' => array ( 'global_map', 'map_control' ),
 		'add_map_type_control' => array ( 'global_map', 'add_map_type_control' ),
 		'add_overview_control' => array ( 'global_map', 'add_overview_control' ),
 		'show_post' => array ( 'global_map', 'show_post' ),
 		'show_future' => array ( 'global_map', 'show_future' ),
-		'marker_min_zoom' => array ( 'global_map', 'marker_min_zoom' ),
 		'max_posts' => array ( 'global_map', 'max_posts' ),
 		'auto_info_open' => array ( 'global_map', 'auto_info_open' ),
 		'auto_open_info_window' => array ( 'global_map', 'auto_info_open' ),
@@ -86,11 +130,68 @@ class GeoMashupOptions {
 		'in_post_add_map_type_control' => array ( 'single_map', 'add_map_type_control' ),
 		'in_post_click_to_load' => array ( 'single_map', 'click_to_load' ),
 		'in_post_click_to_load_text' => array ( 'single_map', 'click_to_load_text' ) );
+
+	/**
+	 * Options keys whose values aren't predictable.
+	 * 
+	 * @since 1.2
+	 * @access private
+	 * @var array
+	 */
+	var $freeform_option_keys = array ( 'category_color', 'category_line_zoom', 'add_map_type_control' );
+
+	/**
+	 * Valid map types.
+	 * 
+	 * @since 1.2
+	 * @access public
+	 * @var array
+	 */
+	var $valid_map_types = array ( 'G_NORMAL_MAP', 'G_SATELLITE_MAP', 'G_HYBRID_MAP', 'G_PHYSICAL_MAP', 'G_SATELLITE_3D_MAP' );
+
+	/**
+	 * Saved option values.
+	 *
+	 * Use the GeoMashupOptions::get() method for access.
+	 * 
+	 * @since 1.2
+	 * @access private
+	 * @var array
+	 */
 	var $options;
+
+	/**
+	 * Old option values that can't be converted.
+	 * 
+	 * @since 1.2
+	 * @access private
+	 * @var array
+	 */
 	var $corrupt_options = '';
+
+	/**
+	 * Validation messages.
+	 * 
+	 * @since 1.2
+	 * @access private
+	 * @var array
+	 */
 	var $validation_errors = array();
 
+	/**
+	 * PHP4 constructor
+	 *
+	 * Should be used only in this file.
+	 * 
+	 * @since 1.2
+	 * @access private
+	 * @return void
+	 */
 	function GeoMashupOptions ( ) {
+		$shared_google_api_key = get_option ( 'google_api_key' );
+		if ( $shared_google_api_key ) {
+			$this->default_options['overall']['google_key'] = $shared_google_api_key;
+		}
 		$this->options = $this->default_options;
 		$settings = get_option ( 'geo_mashup_options' );
 		if ( is_array ( $settings ) ) {
@@ -104,6 +205,15 @@ class GeoMashupOptions {
 		}
 	}
 
+	/**
+	 * Change old option names.
+	 * 
+	 * @since 1.2
+	 * @access private
+	 *
+	 * @param array $settings Existing settings.
+	 * @return array Converted settings.
+	 */
 	function convert_old_settings ( $settings ) {
 		foreach ( $this->conversions as $old_key => $new_keys ) {
 			if ( isset ( $settings[$old_key] ) ) {
@@ -114,14 +224,45 @@ class GeoMashupOptions {
 		return $settings;
 	}
 
+	/**
+	 * Write current values to the database.
+	 * 
+	 * @since 1.2
+	 * @access public
+	 *
+	 * @return bool Success or failure.
+	 */
 	function save ( ) {
 		$saved = false;
 		if ($this->options == $this->valid_options ( $this->options ) ) {
 			$saved = update_option('geo_mashup_options', $this->options);
+			
+			// Share our Google API key
+			$google_api_key = $this->options['overall']['google_key'];
+			if ( !empty ( $google_api_key ) && !get_option ( 'google_api_key' ) ) {
+				update_option( 'google_api_key', $google_api_key );
+			}
 		}
 		return $saved;
 	}
 
+	/**
+	 * Get a saved option value.
+	 * 
+	 * <code>
+	 * $single_map_options_array = $geo_mashup_options->get( 'single_map' );
+	 * $google_key = $geo_mashup_options->get( 'overall', 'google_key' );
+	 * $add_global_satellite_map = $geo_mashup_options->get( 'global_map', 'add_map_type_control', 'G_SATELLITE_MAP' );
+	 * </code>
+	 *
+	 * @since 1.2
+	 * @access public
+	 *
+	 * @param string $key1 Highest level key.
+	 * @param string $key2 Second level key.
+	 * @param string $key3 Third level key.
+	 * @return string|array The option value or values.
+	 */
 	function get ( $key1, $key2 = null, $key3 = null ) {
 		$subset = array();
 		if ( is_null ( $key2 ) ) {
@@ -151,16 +292,28 @@ class GeoMashupOptions {
 		}
 	}
 
+	/**
+	 * Import valid options from an array.
+	 * 
+	 * @since 1.2
+	 * @access public
+	 *
+	 * @param array $option_array Associative array of option names and values.
+	 */
 	function set_valid_options ( $option_array ) {
 		$this->validation_errors = array ( );
 		$this->options = $this->valid_options ( $option_array );
 	}
 
 	/**
-	 * valid_options
+	 * Remove invalid option keys from an array, and replace invalid values with defaults.
+	 *
+	 * @since 1.2
+	 * @access private
+	 *
 	 * @param option_array An array of options to validate.
 	 * @param defaults Opional array of valid default values.
-	 * @return An array of all option values, with invalid keys eliminated and invalid values replaced by defaults.
+	 * @return array Valid options.
 	 */
 	function valid_options ( $option_array, $defaults = null ) {
 		$valid_options = array ( );
@@ -170,9 +323,9 @@ class GeoMashupOptions {
 		if ( !is_array( $option_array ) ) return $defaults;
 
 		foreach ( $defaults as $key => $default_value ) {
-			if ( $this->is_valid ( $key, $option_array[$key] ) ) {
-				if ( is_array ( $option_array[$key] ) && !in_array ( $key, array ( 'category_color', 'category_line_zoom' ) ) ) {
-					// Validate options in sub-arrays, except those based on blog categories
+			if ( isset( $option_array[$key] ) && $this->is_valid ( $key, $option_array[$key] ) ) {
+				if ( is_array ( $option_array[$key] ) && !in_array ( $key, $this->freeform_option_keys ) ) {
+					// Validate options in sub-arrays, except freeform array options, whose keys aren't known
 					$valid_options[$key] = $this->valid_options ( $option_array[$key], $default_value );
 				} else {
 					// Use the valid non-array value
@@ -191,14 +344,38 @@ class GeoMashupOptions {
 		return $valid_options;
 	}
 
-	function is_valid ( $key, $value ) {
+	/**
+	 * Check an option key and value for validity.
+	 * 
+	 * @since 1.2
+	 * @access public
+	 *
+	 * @param string $key Option key.
+	 * @param mixed $value Option value, modified in some cases.
+	 * @return bool True if valid.
+	 */
+	function is_valid ( $key, &$value ) {
 		switch ( $key ) {
 			case 'map_type':
-				$valid_map_types = array ( 'G_NORMAL_MAP', 'G_SATELLITE_MAP', 'G_HYBRID_MAP', 'G_PHYSICAL_MAP', 'G_SATELLITE_3D_MAP' );
-				if ( !in_array ( $value, $valid_map_types ) ) {
+				if ( !in_array ( $value, $this->valid_map_types ) ) {
 					array_push ( $this->validation_errors, '"'. $value . '" ' . __('is invalid for', 'GeoMashup') . ' ' . $key .
 						__(', which must be a valid map type (see documentation)', 'GeoMashup') );
 					return false;
+				}
+				return true;
+
+			case 'add_map_type_control':
+				if ( !is_array ( $value ) ) {
+					array_push ( $this->validation_errors, '"'. $value . '" ' . __('is invalid for', 'GeoMashup') . ' ' . $key .
+						__(', which must be an array of valid map types (see documentation)', 'GeoMashup') );
+					return false;
+				}
+				foreach( $value as $map_type ) {
+					if ( !in_array ( $map_type, $this->valid_map_types ) ) {
+						array_push ( $this->validation_errors, '"'. $map_type . '" ' . __('is invalid for', 'GeoMashup') . ' ' . $key .
+							__(', which must be a valid map type (see documentation)', 'GeoMashup') );
+						return false;
+					}
 				}
 				return true;
 
@@ -211,7 +388,9 @@ class GeoMashupOptions {
 				}
 				return true;
 
-			// strings
+			// strings without HTML
+			case 'adsense_code':
+				if ( empty( $value ) ) $value = 'partner-pub-5088093001880917';
 			case 'category_link_separator':
 			case 'category_link_text':
 			case 'click_to_load_text':
@@ -221,6 +400,11 @@ class GeoMashupOptions {
 				if ( !is_string ( $value ) ) {
 					array_push ( $this->validation_errors, '"'. $value . '" ' . __('is invalid for', 'GeoMashup') . ' ' . $key .
 						__(', which must be a string', 'GeoMashup') );
+					return false;
+				}
+				if ( preg_match( "/<.*>/", $value ) ) {
+					array_push ( $this->validation_errors, '"'. esc_html( $value ) . '" ' . __('is invalid for', 'GeoMashup') . ' ' . $key .
+						__(', which must not contain XML tags.', 'GeoMashup') );
 					return false;
 				}
 				return true;
@@ -241,12 +425,21 @@ class GeoMashupOptions {
 			// booleans
 			case 'auto_info_open':
 			case 'add_category_links':
-			case 'add_map_type_control':
 			case 'add_overview_control':
+			case 'add_google_bar':
+			case 'enable_scroll_wheel_zoom':
+			case 'marker_select_info_window':
+			case 'marker_select_highlight':
+			case 'marker_select_center':
+			case 'marker_select_attachments':
 			case 'theme_stylesheet_with_maps':
 			case 'show_post':
 			case 'click_to_load':
 			case 'show_future':
+			case 'post':
+			case 'user':
+			case 'comment':
+			case 'enable_reverse_geocoding':
 				if ( empty ( $value ) ) {
 					// fail quietly - it will be converted to false
 					return false;
@@ -264,6 +457,7 @@ class GeoMashupOptions {
 			case 'context_map':
 			case 'category_color':
 			case 'category_line_zoom':
+			case 'located_object_name':
 				if ( !is_array ( $value ) ) {
 					array_push ( $this->validation_errors, '"'. $value . '" ' . __('is invalid for', 'GeoMashup') . ' ' . $key .
 						__(', which must be an array', 'GeoMashup') );
@@ -272,10 +466,11 @@ class GeoMashupOptions {
 				return true;
 
 			// zoom levels
-			case 'marker_min_zoom':
+			case 'cluster_max_zoom':
 				if ( empty ( $value ) ) return true;
 			case 'zoom':
 			case 'category_zoom':
+				if ( $value == 'auto' ) return true;
 				if ( !is_numeric ( $value ) || $value < 0 || $value > GEO_MASHUP_MAX_ZOOM ) {
 					array_push ( $this->validation_errors, '"'. $value . '" ' . __('is invalid for', 'GeoMashup') . ' ' . $key .
 						__(', which must be a number from 0 to ', 'GeoMashup') . GEO_MASHUP_MAX_ZOOM );
@@ -289,6 +484,9 @@ class GeoMashupOptions {
 	}
 }
 
+/**
+ * @global GeoMashupOptions The singleton instance of the GeoMashupOptions class.
+ */
 global $geo_mashup_options;
 $geo_mashup_options = new GeoMashupOptions ( );
 

@@ -1,10 +1,10 @@
 === Geo Mashup ===
 Contributors: cyberhobo
-Donate Link: http://www.cyberhobo.net/downloads/geo-mashup-plugin/
+Donate Link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=11045324
 Tags: map, maps, google maps, google map, mapping, mashup, geo, google, geocms
 Requires at least: 2.6
 Tested up to: 2.9.1
-Stable tag: trunk
+Stable tag: 1.2.10
 
 Include Google maps in posts and pages, and map posts and pages on global maps. Make WordPress into a GeoCMS.
 
