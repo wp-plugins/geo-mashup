@@ -11,7 +11,11 @@
  *
  * @package GeoMashup
  */
+
+// Avoid nested maps
+add_filter( 'the_content', array( 'GeoMashupQuery', 'strip_map_shortcodes' ), 1, 9 );
 ?>
+<div class="info-window-max">
 <?php if (have_posts()) : ?>
 
 	<?php while (have_posts()) : the_post(); ?>
@@ -31,3 +35,4 @@
 	<p class="center">Sorry, but you are looking for something that isn't here.</p>
 
 <?php endif; ?>
+</div>
