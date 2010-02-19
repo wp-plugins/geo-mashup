@@ -3,26 +3,26 @@
 Plugin Name: Geo Mashup
 Plugin URI: http://code.google.com/p/wordpress-geo-mashup/ 
 Description: Save location for posts and pages, or even users and comments. Display these locations on Google maps. Make WordPress into your GeoCMS.
-Version: 1.3beta1
+Version: 1.3
 Author: Dylan Kuhn
 Author URI: http://www.cyberhobo.net/
 Minimum WordPress Version Required: 2.8
 */
 
-/*
-Copyright (c) 2005-2019 Dylan Kuhn
+/*  Copyright 2010  Dylan Kuhn  (email : cyberhobo@cyberhobo.net)
 
-This program is free software; you can redistribute it
-and/or modify it under the terms of the GNU General Public
-License as published by the Free Software Foundation;
-either version 2 of the License, or (at your option) any
-later version.
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License, version 2, as 
+    published by the Free Software Foundation.
 
-This program is distributed in the hope that it will be
-useful, but WITHOUT ANY WARRANTY; without even the implied
-warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-PURPOSE. See the GNU General Public License for more
-details.
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 /**
@@ -170,7 +170,7 @@ class GeoMashup {
 		}
 		define('GEO_MASHUP_MAX_ZOOM', 20);
 		// Make numeric versions: -.02 for alpha, -.01 for beta
-		define('GEO_MASHUP_VERSION', '1.2.99.1');
+		define('GEO_MASHUP_VERSION', '1.3');
 		define('GEO_MASHUP_DB_VERSION', '1.3');
 	}
 
@@ -527,7 +527,7 @@ class GeoMashup {
 	function get_locations_json( $query_args ) {
 		$default_args = array( 'object_name' => 'post' );
 		$query_args = wp_parse_args( $query_args, $default_args );
-		$json_ojbects = array();
+		$json_objects = array();
 		$objects = GeoMashupDB::get_object_locations( $query_args );
 		if ( $objects ) {
 			foreach ($objects as $object) {
@@ -925,7 +925,7 @@ class GeoMashup {
 
 		$message = '';
 		$google_key = $geo_mashup_options->get( 'overall', 'google_key' );
-		if ( empty( $google_key ) ) {
+		if ( empty( $google_key ) and current_user_can( 'manage_options' ) ) {
 			if ( ! isset( $_GET['page'] ) or GEO_MASHUP_PLUGIN_NAME != $_GET['page'] ) {
 				// We're not looking at the settings, but it's important to do so
 				$message = __( 'Geo Mashup requires a Google API key in the <a href="%s">settings</a> before it will work.', 'GeoMashup' );
