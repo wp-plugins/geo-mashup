@@ -4,22 +4,28 @@
  *
  * Don't modify this file! It will be overwritten by upgrades.
  *
- * Instead, copy this file to "info-window.php" in this directory,
- * or "geo-mashup-info-window.php" in your theme directory. Those files will
- * take precedence over this one.
+ * Instead, copy this file to "geo-mashup-info-window.php" in your theme directory, 
+ * or info-window.php in the Geo Mashup Custom plugin directory, if you have that 
+ * installed. Those files take precedence over this one.
  *
  * For styling of the info window, see map-style-default.css.
+ *
+ * @package GeoMashup
  */
+
+// A potentially heavy-handed way to remove shortcode-like content
+add_filter( 'the_excerpt', array( 'GeoMashupQuery', 'strip_brackets' ) );
+
 ?>
-<div class="locationinfo">
+<div class="locationinfo post-location-info">
 <?php if (have_posts()) : ?>
 
 	<?php while (have_posts()) : the_post(); ?>
 
 		<h2><a href="<?php the_permalink() ?>" title="<?php the_title_attribute(); ?>"><?php the_title(); ?></a></h2>
-		<?php if ($wp_query->post_count == 1) : ?>
-			<p class="meta"><span class="blogdate"><?php the_time('F jS, Y') ?></span> <?php the_category( ', ' ) ?></p>
+		<p class="meta"><span class="blogdate"><?php the_time('F jS, Y') ?></span> <?php the_category( ', ' ) ?></p>
 
+		<?php if ($wp_query->post_count == 1) : ?>
 			<div class="storycontent">
 				<?php the_excerpt(); ?>
 			</div>
