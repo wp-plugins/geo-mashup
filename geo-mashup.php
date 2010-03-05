@@ -3,7 +3,7 @@
 Plugin Name: Geo Mashup
 Plugin URI: http://code.google.com/p/wordpress-geo-mashup/ 
 Description: Save location for posts and pages, or even users and comments. Display these locations on Google maps. Make WordPress into your GeoCMS.
-Version: 1.3
+Version: 1.3.1
 Author: Dylan Kuhn
 Author URI: http://www.cyberhobo.net/
 Minimum WordPress Version Required: 2.8
@@ -170,7 +170,7 @@ class GeoMashup {
 		}
 		define('GEO_MASHUP_MAX_ZOOM', 20);
 		// Make numeric versions: -.02 for alpha, -.01 for beta
-		define('GEO_MASHUP_VERSION', '1.3');
+		define('GEO_MASHUP_VERSION', '1.3.1');
 		define('GEO_MASHUP_DB_VERSION', '1.3');
 	}
 
@@ -247,9 +247,6 @@ class GeoMashup {
 			// The parameter's purpose is to get us here, we can remove it now
 			unset( $_GET['geo_mashup_content'] );
 
-			check_ajax_referer( 'geo-mashup-' . $geo_mashup_content, '_wpnonce' );
-			unset( $_GET['_wpnonce'] );
-
 			// Call the function corresponding to the content request
 			// This provides some security, as only implemented methods will be executed
 			$method = str_replace( '-', '_', $geo_mashup_content );
@@ -290,6 +287,9 @@ class GeoMashup {
 	 * @static
 	 */
 	function ajax_edit() {
+		check_ajax_referer( 'geo-mashup-ajax-edit', '_wpnonce' );
+		unset( $_GET['_wpnonce'] );
+
 		$status = array( 'request' => 'ajax-edit', 'code' => 200 );
 		if ( isset( $_POST['geo_mashup_object_id'] ) ) {
 			$status['object_id'] = $_POST['geo_mashup_object_id'];
@@ -751,8 +751,7 @@ class GeoMashup {
 			}
 		}
 					
-		$iframe_src = get_option( 'siteurl' ) . '?geo_mashup_content=render-map&amp;_wpnonce=' . 
-			wp_create_nonce( 'geo-mashup-render-map' ) . '&amp;' .
+		$iframe_src = get_option( 'url' ) . '?geo_mashup_content=render-map&amp;' . 
 			GeoMashup::implode_assoc('=', '&amp;', $url_params, false, true);
 		$content = "";
 
@@ -764,7 +763,7 @@ class GeoMashup {
 					"background-image:url(".GEO_MASHUP_URL_PATH."/images/wp-gm-pale.png);".
 					"background-repeat:no-repeat;background-position:center;cursor:pointer;";
 				$content = "<div class=\"gm-map\" style=\"$style\" " .
-					"onclick=\"GeoMashupLoader.addMapFrame(this,'$iframe_src',{$url_params['height']},{$url_params['width']},'$name')\">";
+					"onclick=\"GeoMashupLoader.addMapFrame(this,'$iframe_src','{$url_params['height']}','{$url_params['width']}','$name')\">";
 				if ( isset($url_params['static']) &&  'true' === $url_params['static'] ) {
 					// TODO: test whether click to load really works with a static map
 					$content .= $map_image . '</div>';
