@@ -58,7 +58,7 @@ and the [tag reference](http://code.google.com/p/wordpress-geo-mashup/wiki/TagRe
 
 = Translations =
 
-* German by Thomas Morvay added in version 1.3.2
+* German by [Thomas Morvay](http://morvay.biz)] added in version 1.3.2
 * Italian by [Stefan Des](http://www.stefandes.com/) added in version 1.2.9
 * Belorussian by [FatCow](http://www.fatcow.com) added in version 1.2.8
 * French added in version 1.1
