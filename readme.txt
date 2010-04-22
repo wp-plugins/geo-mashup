@@ -4,7 +4,7 @@ Donate Link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_i
 Tags: map, maps, google maps, google map, mapping, mashup, geo, google, geocms
 Requires at least: 2.8
 Tested up to: 2.9.2
-Stable tag: 1.3.2
+Stable tag: 1.3.3
 
 Include Google maps in posts and pages, and map posts, pages, and other objects on global maps. Make WordPress into a GeoCMS.
 
@@ -58,6 +58,8 @@ and the [tag reference](http://code.google.com/p/wordpress-geo-mashup/wiki/TagRe
 
 = Translations =
 
+* Spanish by [Reven](http://www.reven.org/blog/2010/03/15/traduccion-de-geo-mashup/) added in version 1.3.3
+* Swedish by [Joakim Green](http://www.joakimgreen.com/) added in version 1.3.3
 * German by [Thomas Morvay](http://morvay.biz)] added in version 1.3.2
 * Italian by [Stefan Des](http://www.stefandes.com/) added in version 1.2.9
 * Belorussian by [FatCow](http://www.fatcow.com) added in version 1.2.8

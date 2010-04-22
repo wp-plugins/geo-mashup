@@ -770,7 +770,9 @@ GeoMashup = {
 	},
 
 	createMarker : function(point,obj) {
-		var marker, marker_opts = {title:obj.title};
+		var marker, 
+			// Apersand entities have been added for validity, but look bad in titles
+			marker_opts = {title: obj.title.replace( '&amp;', '&' )};
 
 		if ( !obj.icon ) {
 			this.addObjectIcon( obj );
@@ -1230,7 +1232,7 @@ GeoMashup = {
 			opts.object_name = 'post';
 		}
 		this.opts = opts;
-		this.geo_query_url = opts.siteurl + '?geo_mashup_content=geo-query';
+		this.geo_query_url = opts.home_url + '?geo_mashup_content=geo-query';
 
 		google.maps.Event.bind(this.map, "zoomend", this, this.adjustZoom);
 		google.maps.Event.bind(this.map, "moveend", this, this.adjustViewport);
@@ -1378,7 +1380,7 @@ GeoMashup = {
 		}
 
 		google.maps.Event.addListener( this.map, 'click', function( overlay ) {
-			if ( GeoMashup.selected_marker && overlay !== GeoMashup.selected_marker && overlay !== GeoMashup.map.getInfoWindow() ) {
+			if ( GeoMashup.selected_marker && ( ! overlay ) ) {
 				GeoMashup.deselectMarker();
 			}
 		} );
