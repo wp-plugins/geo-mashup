@@ -770,7 +770,9 @@ GeoMashup = {
 	},
 
 	createMarker : function(point,obj) {
-		var marker, marker_opts = {title:obj.title};
+		var marker, 
+			// Apersand entities have been added for validity, but look bad in titles
+			marker_opts = {title: obj.title.replace( '&amp;', '&' )};
 
 		if ( !obj.icon ) {
 			this.addObjectIcon( obj );
@@ -1177,6 +1179,9 @@ GeoMashup = {
 		// For now, the map name is always the iframe name
 		opts.name = window.name;
 
+		// home_url and siteurl may sometime be different, but for now just one
+		opts.home_url = opts.siteurl;
+
 		map_types = {
 			'G_NORMAL_MAP' : google.maps.NORMAL_MAP,
 			'G_SATELLITE_MAP' : google.maps.SATELLITE_MAP,
@@ -1230,7 +1235,7 @@ GeoMashup = {
 			opts.object_name = 'post';
 		}
 		this.opts = opts;
-		this.geo_query_url = opts.siteurl + '?geo_mashup_content=geo-query&_wpnonce=' + opts.nonce;
+		this.geo_query_url = opts.home_url + '?geo_mashup_content=geo-query';
 
 		google.maps.Event.bind(this.map, "zoomend", this, this.adjustZoom);
 		google.maps.Event.bind(this.map, "moveend", this, this.adjustViewport);
@@ -1357,14 +1362,16 @@ GeoMashup = {
 			}
 		}
 
-		credit_div = document.createElement( 'div' );
-		credit_div.innerHTML = [
-			'<div class="gmnoprint" style="-moz-user-select: none; z-index: 0; position: absolute; left: 2px; bottom: 38px;">',
-			'<a title="Geo Mashup" href="http://code.google.com/p/wordpress-geo-mashup" target="_blank">',
-			'<img style="border: 0px none ; margin: 0px; padding: 0px; width: 60px; height: 39px; -moz-user-select: none; cursor: pointer;" src="',
-			this.opts.url_path,
-			'/images/gm-credit.png"/></a></div>'].join( '' );
-		this.container.appendChild( credit_div );
+		if ( ! opts.remove_geo_mashup_logo && this.map.getSize().width > 300 && this.map.getSize().height > 300 ) {
+			credit_div = document.createElement( 'div' );
+			credit_div.innerHTML = [
+				'<div class="gmnoprint" style="-moz-user-select: none; z-index: 0; position: absolute; left: 2px; bottom: 38px;">',
+				'<a title="Geo Mashup" href="http://code.google.com/p/wordpress-geo-mashup" target="_blank">',
+				'<img style="border: 0px none ; margin: 0px; padding: 0px; width: 60px; height: 39px; -moz-user-select: none; cursor: pointer;" src="',
+				this.opts.url_path,
+				'/images/gm-credit.png"/></a></div>'].join( '' );
+			this.container.appendChild( credit_div );
+		}
 		
 		// Google bar must be added after the credit div so it layers on top
 		if ( opts.add_google_bar ) {
@@ -1376,7 +1383,7 @@ GeoMashup = {
 		}
 
 		google.maps.Event.addListener( this.map, 'click', function( overlay ) {
-			if ( overlay !== GeoMashup.selected_marker && overlay !== GeoMashup.map.getInfoWindow() ) {
+			if ( GeoMashup.selected_marker && ( ! overlay ) ) {
 				GeoMashup.deselectMarker();
 			}
 		} );
