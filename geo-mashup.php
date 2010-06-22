@@ -3,7 +3,7 @@
 Plugin Name: Geo Mashup
 Plugin URI: http://code.google.com/p/wordpress-geo-mashup/ 
 Description: Save location for posts and pages, or even users and comments. Display these locations on Google maps. Make WordPress into your GeoCMS.
-Version: 1.3.3
+Version: 1.3.4
 Author: Dylan Kuhn
 Author URI: http://www.cyberhobo.net/
 Minimum WordPress Version Required: 2.8
@@ -170,7 +170,7 @@ class GeoMashup {
 		}
 		define('GEO_MASHUP_MAX_ZOOM', 20);
 		// Make numeric versions: -.02 for alpha, -.01 for beta
-		define('GEO_MASHUP_VERSION', '1.3.3');
+		define('GEO_MASHUP_VERSION', '1.3.4');
 		define('GEO_MASHUP_DB_VERSION', '1.3');
 	}
 
@@ -488,9 +488,9 @@ class GeoMashup {
 			$loc = GeoMashupDB::get_object_location( 'post', $wp_query->post->ID );
 			if (!empty($loc)) {
 				$title = esc_html(convert_chars(strip_tags(get_bloginfo('name'))." - ".$wp_query->post->post_title));
-				echo '<meta name="ICBM" content="' . attribute_escape( $loc->lat . ', ' . $loc->lng ) . '" />' . "\n";
-				echo '<meta name="DC.title" content="' . attribute_escape( $title ) . '" />' . "\n";
-				echo '<meta name="geo.position" content="' .  attribute_escape( $loc->lat . ';' . $loc->lng ) . '" />' . "\n";
+				echo '<meta name="ICBM" content="' . esc_attr( $loc->lat . ', ' . $loc->lng ) . '" />' . "\n";
+				echo '<meta name="DC.title" content="' . esc_attr( $title ) . '" />' . "\n";
+				echo '<meta name="geo.position" content="' .  esc_attr( $loc->lat . ';' . $loc->lng ) . '" />' . "\n";
 			}
 		}
 		else
@@ -501,9 +501,9 @@ class GeoMashup {
 				foreach ( $saved_locations as $saved_location ) {
 					if ( $saved_location->saved_name == 'default' ) {
 						$title = esc_html(convert_chars(strip_tags(get_bloginfo('name'))));
-						echo '<meta name="ICBM" content="' . attribute_escape( $saved_location->lat . ', ' . $saved_location->lon ) . '\" />'. "\n";
-						echo '<meta name="DC.title" content="' . attribute_escape( $title ) . '" />' . "\n";
-						echo '<meta name="geo.position" content="' . attribute_escape( $saved_location->lat . ';' . $saved_location->lon ) . '\" />' . "\n";
+						echo '<meta name="ICBM" content="' . esc_attr( $saved_location->lat . ', ' . $saved_location->lon ) . '\" />'. "\n";
+						echo '<meta name="DC.title" content="' . esc_attr( $title ) . '" />' . "\n";
+						echo '<meta name="geo.position" content="' . esc_attr( $saved_location->lat . ';' . $saved_location->lon ) . '\" />' . "\n";
 					}
 				}
 			}
@@ -555,7 +555,8 @@ class GeoMashup {
 					'object_id' => $object->object_id,
 					// We should be able to use real UTF-8 characters in titles
 					// Helps with the spelling-out of entities in tooltips
-					'title' => html_entity_decode( $object->label, ENT_COMPAT, 'UTF-8' ),
+					// PHP4 screams about multibyte characters - make it shut up with @
+					'title' => @html_entity_decode( $object->label, ENT_COMPAT, 'UTF-8' ),
 					'lat' => $object->lat,
 					'lng' => $object->lng,
 					'author_name' => $author_name,
@@ -753,7 +754,7 @@ class GeoMashup {
 			}
 		}
 					
-		$iframe_src = get_option( 'home' ) . '?geo_mashup_content=render-map&amp;' . 
+		$iframe_src = get_bloginfo( 'url' ) . '?geo_mashup_content=render-map&amp;' . 
 			GeoMashup::implode_assoc('=', '&amp;', $url_params, false, true);
 		$content = "";
 
@@ -907,7 +908,7 @@ class GeoMashup {
 	 */
 	function admin_menu() {
 		if (function_exists('add_options_page')) {
-			add_options_page(__('Geo Mashup Options','GeoMashup'), __('Geo Mashup','GeoMashup'), 8, __FILE__, array('GeoMashup', 'options_page'));
+			add_options_page(__('Geo Mashup Options','GeoMashup'), __('Geo Mashup','GeoMashup'), 'manage_options', __FILE__, array('GeoMashup', 'options_page'));
 		}
 	}
 
