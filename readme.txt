@@ -107,7 +107,7 @@ for the best way to keep your custom files safe moving forward.
 == Change Log ==
 
 = 1.3.5 =
-[milestone 1.3.5 changes](http://code.google.com/p/wordpress-geo-mashup/issues/list?can=1&q=Milestone%3D1.3.4)
+[milestone 1.3.5 changes](http://code.google.com/p/wordpress-geo-mashup/issues/list?can=1&q=Milestone%3D1.3.5)
 
 = 1.3.4 =
 [milestone 1.3.4 changes](http://code.google.com/p/wordpress-geo-mashup/issues/list?can=1&q=Milestone%3D1.3.4)
