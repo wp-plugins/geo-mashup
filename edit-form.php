@@ -113,7 +113,7 @@ function geo_mashup_edit_form( $object_name, $object_id, $ui_manager = '' ) {
 
 	$nonce = wp_create_nonce('geo-mashup-edit');
 	$ajax_nonce = wp_create_nonce('geo-mashup-ajax-edit');
-	$ajax_url = trailingslashit( get_bloginfo( 'siteurl' ) ) . '?geo_mashup_content=ajax-edit&_wpnonce=' .
+	$ajax_url = trailingslashit( get_bloginfo( 'url' ) ) . '?geo_mashup_content=ajax-edit&_wpnonce=' .
 		$ajax_nonce;
 
 	$static_maps_base_url = 'http://maps.google.com/maps/api/staticmap?sensor=false&amp;key=' .
@@ -137,17 +137,17 @@ function geo_mashup_edit_form( $object_name, $object_id, $ui_manager = '' ) {
 		<tr id="geo_mashup_display" class="geo-mashup-display-row">
 			<td class="geo-mashup-info">
 				<div class="geo-mashup-address"><?php echo esc_html( $location->address ); ?></div>
-				<div class="geo-mashup-coordinates"><?php echo attribute_escape( $coordinate_string ); ?></div>
+				<div class="geo-mashup-coordinates"><?php echo esc_attr( $coordinate_string ); ?></div>
 			</td>
 			<td id="geo_mashup_saved_name_ui">
-				<input id="geo_mashup_location_name" name="geo_mashup_location_name" size="50" type="text" value="<?php echo attribute_escape( $post_location_name ); ?>" />
+				<input id="geo_mashup_location_name" name="geo_mashup_location_name" size="50" type="text" value="<?php echo esc_attr( $post_location_name ); ?>" />
 			</td>
 			<td id="geo_mashup_date_ui">
-				<input id="geo_mashup_date" name="geo_mashup_date" type="text" size="20" value="<?php echo attribute_escape( $location_date ); ?>" /><br />
+				<input id="geo_mashup_date" name="geo_mashup_date" type="text" size="20" value="<?php echo esc_attr( $location_date ); ?>" /><br />
 				@
-				<input id="geo_mashup_hour" name="geo_mashup_hour" type="text" size="2" maxlength="2" value="<?php echo attribute_escape( $location_hour ); ?>" />
+				<input id="geo_mashup_hour" name="geo_mashup_hour" type="text" size="2" maxlength="2" value="<?php echo esc_attr( $location_hour ); ?>" />
 				:
-				<input id="geo_mashup_minute" name="geo_mashup_minute" type="text" size="2" maxlength="2" value="<?php echo attribute_escape( $location_minute ); ?>" />
+				<input id="geo_mashup_minute" name="geo_mashup_minute" type="text" size="2" maxlength="2" value="<?php echo esc_attr( $location_minute ); ?>" />
 			</td>
 			<td id="geo_mashup_ajax_buttons">
 			</td>
@@ -163,7 +163,7 @@ function geo_mashup_edit_form( $object_name, $object_id, $ui_manager = '' ) {
 	<?php if ( ! empty( $location->id ) ) : ?>
 	<noscript>
 		<div id="geo_mashup_static_map">
-			<img src="<?php echo $static_maps_base_url; ?>&amp;size=400x300&amp;zoom=4&amp;markers=size:small|color:green|<?php echo attribute_escape( $location->lat . ',' . $location->lng ); ?>" 
+			<img src="<?php echo $static_maps_base_url; ?>&amp;size=400x300&amp;zoom=4&amp;markers=size:small|color:green|<?php echo esc_attr( $location->lat . ',' . $location->lng ); ?>" 
 				alt="<?php _e( 'Location Map Image', 'GeoMashup' ); ?>" />
 		</div>
 	</noscript>
@@ -174,7 +174,7 @@ function geo_mashup_edit_form( $object_name, $object_id, $ui_manager = '' ) {
 	<input	id="geo_mashup_search" name="geo_mashup_search" type="text" size="35" />
 	</label>
 
-	<?php _e( 'or select from' ); ?> 
+	<?php _e( 'or select from', 'GeoMashup' ); ?> 
 	<select id="geo_mashup_select" name="geo_mashup_select"> 
 		<option value=""><?php _e('[Saved Locations]','GeoMashup'); ?></option>
 		<?php echo $saved_location_options; ?>
@@ -188,21 +188,21 @@ function geo_mashup_edit_form( $object_name, $object_id, $ui_manager = '' ) {
 	<input id="geo_mashup_ui_manager" name="geo_mashup_ui_manager" type="hidden" value="<?php echo $ui_manager; ?>" />
 	<input id="geo_mashup_object_id" name="geo_mashup_object_id" type="hidden" value="<?php echo $object_id; ?>" />
 	<input id="geo_mashup_no_js" name="geo_mashup_no_js" type="hidden" value="true" />
-	<input id="geo_mashup_location_id" name="geo_mashup_location_id" type="hidden" value="<?php echo attribute_escape( $location->id ); ?>" />
-	<input id="geo_mashup_location" name="geo_mashup_location" type="hidden" value="<?php echo attribute_escape( $coordinate_string ); ?>" />
-	<input id="geo_mashup_geoname" name="geo_mashup_geoname" type="hidden" value="<?php echo attribute_escape( $location->geoname ); ?>" />
-	<input id="geo_mashup_address" name="geo_mashup_address" type="hidden" value="<?php echo attribute_escape( $location->address ); ?>" />
-	<input id="geo_mashup_postal_code" name="geo_mashup_postal_code" type="hidden" value="<?php echo attribute_escape( $location->postal_code ); ?>" />
-	<input id="geo_mashup_country_code" name="geo_mashup_country_code" type="hidden" value="<?php echo attribute_escape( $location->country_code ); ?>" />
-	<input id="geo_mashup_admin_code" name="geo_mashup_admin_code" type="hidden" value="<?php echo attribute_escape( $location->admin_code ); ?>" />
+	<input id="geo_mashup_location_id" name="geo_mashup_location_id" type="hidden" value="<?php echo esc_attr( $location->id ); ?>" />
+	<input id="geo_mashup_location" name="geo_mashup_location" type="hidden" value="<?php echo esc_attr( $coordinate_string ); ?>" />
+	<input id="geo_mashup_geoname" name="geo_mashup_geoname" type="hidden" value="<?php echo esc_attr( $location->geoname ); ?>" />
+	<input id="geo_mashup_address" name="geo_mashup_address" type="hidden" value="<?php echo esc_attr( $location->address ); ?>" />
+	<input id="geo_mashup_postal_code" name="geo_mashup_postal_code" type="hidden" value="<?php echo esc_attr( $location->postal_code ); ?>" />
+	<input id="geo_mashup_country_code" name="geo_mashup_country_code" type="hidden" value="<?php echo esc_attr( $location->country_code ); ?>" />
+	<input id="geo_mashup_admin_code" name="geo_mashup_admin_code" type="hidden" value="<?php echo esc_attr( $location->admin_code ); ?>" />
 	<input id="geo_mashup_admin_name" name="geo_mashup_admin_name" type="hidden" value="" />
 	<input id="geo_mashup_kml_url" name="geo_mashup_kml_url" type="hidden" value="<?php echo $kml_url; ?>" />
-	<input id="geo_mashup_sub_admin_code" name="geo_mashup_sub_admin_code" type="hidden" value="<? echo attribute_escape( $location->sub_admin_code ); ?>" />
+	<input id="geo_mashup_sub_admin_code" name="geo_mashup_sub_admin_code" type="hidden" value="<?php echo esc_attr( $location->sub_admin_code ); ?>" />
 	<input id="geo_mashup_sub_admin_name" name="geo_mashup_sub_admin_name" type="hidden" value="" />
-	<input id="geo_mashup_locality_name" name="geo_mashup_locality_name" type="hidden" value="<? echo attribute_escape( $location->locality_name ); ?>" />
+	<input id="geo_mashup_locality_name" name="geo_mashup_locality_name" type="hidden" value="<?php echo esc_attr( $location->locality_name ); ?>" />
 	<div id="geo_mashup_submit" class="submit">
 		<input id="geo_mashup_add_location" name="geo_mashup_add_location" type="submit" <?php echo $add_input_style; ?> value="<?php _e( 'Add Location', 'GeoMashup' ); ?>" />
-		<input id="geo_mashup_delete_location" name="geo_mashup_delete_location" type="submit" <?php echo $delete_input_style; ?> value="<?php _e( 'Delete' ); ?>" />
+		<input id="geo_mashup_delete_location" name="geo_mashup_delete_location" type="submit" <?php echo $delete_input_style; ?> value="<?php _e( 'Delete', 'GeoMashup' ); ?>" />
 		<input id="geo_mashup_update_location" name="geo_mashup_update_location" type="submit" <?php echo $update_input_style; ?> value="<?php _e( 'Save', 'GeoMashup' ); ?>" />
 	</div>
 	<div id="geo-mashup-inline-help-link-wrap" class="geo-mashup-js">
@@ -216,7 +216,7 @@ function geo_mashup_edit_form( $object_name, $object_id, $ui_manager = '' ) {
 			<ul>
 				<li><?php _e('Search for a location name.', 'GeoMashup'); ?></li>
 				<li><?php _e('For multiple search results, mouse over pins to see location names, and click a result pin to select that location.', 'GeoMashup'); ?></li>
-				<li><?php _e('Search for a decimal latitude and longitude, like <em>40.123,-105.456</em>.', 'GeoMashup'); ?></li> 
+				<li><?php _e('Search for a decimal latitude and longitude separated by a comma, like <em>40.123,-105.456</em>. Seven decimal places are stored. Negative latitude is used for the southern hemisphere, and negative longitude for the western hemisphere.', 'GeoMashup'); ?></li> 
 				<li><?php _e('Search for a street address, like <em>123 main st, anytown, acity</em>.', 'GeoMashup'); ?></li>
 				<li><?php _e('Click on the location. Zoom in if necessary so you can refine the location by dragging it or clicking a new location.', 'GeoMashup'); ?></li>
 			</ul>
