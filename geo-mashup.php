@@ -3,7 +3,7 @@
 Plugin Name: Geo Mashup
 Plugin URI: http://code.google.com/p/wordpress-geo-mashup/ 
 Description: Save location for posts and pages, or even users and comments. Display these locations on Google maps. Make WordPress into your GeoCMS.
-Version: 1.3
+Version: 1.3.6
 Author: Dylan Kuhn
 Author URI: http://www.cyberhobo.net/
 Minimum WordPress Version Required: 2.8
@@ -170,7 +170,7 @@ class GeoMashup {
 		}
 		define('GEO_MASHUP_MAX_ZOOM', 20);
 		// Make numeric versions: -.02 for alpha, -.01 for beta
-		define('GEO_MASHUP_VERSION', '1.3');
+		define('GEO_MASHUP_VERSION', '1.3.6');
 		define('GEO_MASHUP_DB_VERSION', '1.3');
 	}
 
@@ -247,9 +247,6 @@ class GeoMashup {
 			// The parameter's purpose is to get us here, we can remove it now
 			unset( $_GET['geo_mashup_content'] );
 
-			check_ajax_referer( 'geo-mashup-' . $geo_mashup_content, '_wpnonce' );
-			unset( $_GET['_wpnonce'] );
-
 			// Call the function corresponding to the content request
 			// This provides some security, as only implemented methods will be executed
 			$method = str_replace( '-', '_', $geo_mashup_content );
@@ -290,6 +287,9 @@ class GeoMashup {
 	 * @static
 	 */
 	function ajax_edit() {
+		check_ajax_referer( 'geo-mashup-ajax-edit', '_wpnonce' );
+		unset( $_GET['_wpnonce'] );
+
 		$status = array( 'request' => 'ajax-edit', 'code' => 200 );
 		if ( isset( $_POST['geo_mashup_object_id'] ) ) {
 			$status['object_id'] = $_POST['geo_mashup_object_id'];
@@ -488,9 +488,9 @@ class GeoMashup {
 			$loc = GeoMashupDB::get_object_location( 'post', $wp_query->post->ID );
 			if (!empty($loc)) {
 				$title = esc_html(convert_chars(strip_tags(get_bloginfo('name'))." - ".$wp_query->post->post_title));
-				echo '<meta name="ICBM" content="' . attribute_escape( $loc->lat . ', ' . $loc->lng ) . '" />' . "\n";
-				echo '<meta name="DC.title" content="' . attribute_escape( $title ) . '" />' . "\n";
-				echo '<meta name="geo.position" content="' .  attribute_escape( $loc->lat . ';' . $loc->lng ) . '" />' . "\n";
+				echo '<meta name="ICBM" content="' . esc_attr( $loc->lat . ', ' . $loc->lng ) . '" />' . "\n";
+				echo '<meta name="DC.title" content="' . esc_attr( $title ) . '" />' . "\n";
+				echo '<meta name="geo.position" content="' .  esc_attr( $loc->lat . ';' . $loc->lng ) . '" />' . "\n";
 			}
 		}
 		else
@@ -501,9 +501,9 @@ class GeoMashup {
 				foreach ( $saved_locations as $saved_location ) {
 					if ( $saved_location->saved_name == 'default' ) {
 						$title = esc_html(convert_chars(strip_tags(get_bloginfo('name'))));
-						echo '<meta name="ICBM" content="' . attribute_escape( $saved_location->lat . ', ' . $saved_location->lon ) . '\" />'. "\n";
-						echo '<meta name="DC.title" content="' . attribute_escape( $title ) . '" />' . "\n";
-						echo '<meta name="geo.position" content="' . attribute_escape( $saved_location->lat . ';' . $saved_location->lon ) . '\" />' . "\n";
+						echo '<meta name="ICBM" content="' . esc_attr( $saved_location->lat . ', ' . $saved_location->lon ) . '\" />'. "\n";
+						echo '<meta name="DC.title" content="' . esc_attr( $title ) . '" />' . "\n";
+						echo '<meta name="geo.position" content="' . esc_attr( $saved_location->lat . ';' . $saved_location->lon ) . '\" />' . "\n";
 					}
 				}
 			}
@@ -553,7 +553,10 @@ class GeoMashup {
 				$json_object = array(
 					'object_name' => $query_args['object_name'],
 					'object_id' => $object->object_id,
-					'title' => $object->label,
+					// We should be able to use real UTF-8 characters in titles
+					// Helps with the spelling-out of entities in tooltips
+					// PHP4 screams about multibyte characters - make it shut up with @
+					'title' => @html_entity_decode( $object->label, ENT_COMPAT, 'UTF-8' ),
 					'lat' => $object->lat,
 					'lng' => $object->lng,
 					'author_name' => $author_name,
@@ -751,8 +754,7 @@ class GeoMashup {
 			}
 		}
 					
-		$iframe_src = get_option( 'siteurl' ) . '?geo_mashup_content=render-map&amp;_wpnonce=' . 
-			wp_create_nonce( 'geo-mashup-render-map' ) . '&amp;' .
+		$iframe_src = get_bloginfo( 'url' ) . '?geo_mashup_content=render-map&amp;' . 
 			GeoMashup::implode_assoc('=', '&amp;', $url_params, false, true);
 		$content = "";
 
@@ -764,7 +766,7 @@ class GeoMashup {
 					"background-image:url(".GEO_MASHUP_URL_PATH."/images/wp-gm-pale.png);".
 					"background-repeat:no-repeat;background-position:center;cursor:pointer;";
 				$content = "<div class=\"gm-map\" style=\"$style\" " .
-					"onclick=\"GeoMashupLoader.addMapFrame(this,'$iframe_src',{$url_params['height']},{$url_params['width']},'$name')\">";
+					"onclick=\"GeoMashupLoader.addMapFrame(this,'$iframe_src','{$url_params['height']}','{$url_params['width']}','$name')\">";
 				if ( isset($url_params['static']) &&  'true' === $url_params['static'] ) {
 					// TODO: test whether click to load really works with a static map
 					$content .= $map_image . '</div>';
@@ -906,7 +908,7 @@ class GeoMashup {
 	 */
 	function admin_menu() {
 		if (function_exists('add_options_page')) {
-			add_options_page(__('Geo Mashup Options','GeoMashup'), __('Geo Mashup','GeoMashup'), 8, __FILE__, array('GeoMashup', 'options_page'));
+			add_options_page(__('Geo Mashup Options','GeoMashup'), __('Geo Mashup','GeoMashup'), 'manage_options', __FILE__, array('GeoMashup', 'options_page'));
 		}
 	}
 
@@ -1254,13 +1256,19 @@ class GeoMashup {
 		$list_html = '<div class="gm-area-list">';
 		$countries = GeoMashupDB::get_distinct_located_values( 'country_code', array( 'object_name' => 'post' ) );
 		$country_count = count( $countries );
+		$country_heading = '';
 		foreach ( $countries as $country ) {
 			if ( $country_count > 1 ) {
-				$list_html .= '<h3>' . GeoMashupDB::get_administrative_name( $country->country_code ) . '</h3>';
+				$country_name = GeoMashupDB::get_administrative_name( $country->country_code ); 
+				$country_name = $country_name ? $country_name : $country->country_code;
+				$country_heading = '<h3>' . $country_name . '</h3>';
 			}
 			$states = GeoMashupDB::get_distinct_located_values( 'admin_code', 
 				array( 'country_code' => $country->country_code, 'object_name' => 'post' ) );
-			foreach ($states  as $state ) { 
+			if ( empty( $states ) ) {
+				$states = array( (object) array( 'admin_code' => null ) );
+			}
+			foreach ($states as $state ) { 
 				$location_query = array( 
 					'object_name' => 'post',
 					'country_code' => $country->country_code,
@@ -1269,9 +1277,16 @@ class GeoMashup {
 				);
 				$post_locations = GeoMashupDB::get_object_locations( $location_query );
 				if ( count( $post_locations ) > 0 ) {
-					$list_html .= '<h4>' . 
-						GeoMashupDB::get_administrative_name( $country->country_code, $state->admin_code ) . 
-						'</h4><ul class="gm-index-posts">';
+					if ( ! empty( $country_heading ) ) {
+						$list_html .= $country_heading;
+						$country_heading = '';
+					}
+					if ( null != $states[0]->admin_code ) {
+						$state_name = GeoMashupDB::get_administrative_name( $country->country_code, $state->admin_code );
+						$state_name = $state_name ? $state_name : $state->admin_code;
+						$list_html .= '<h4>' . $state_name . '</h4>';
+					}
+					$list_html .= '<ul class="gm-index-posts">';
 					foreach ( $post_locations as $post_location ) { 
 						$list_html .= '<li><a href="' . 
 							get_permalink( $post_location->object_id ) .

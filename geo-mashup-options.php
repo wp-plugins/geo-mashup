@@ -46,7 +46,7 @@ class GeoMashupOptions {
 			'map_control' => 'GSmallZoomControl3D',
 			'add_map_type_control' => array(),
 			'add_overview_control' => 'false',
-			'add_google_bar' => 'true',
+			'add_google_bar' => 'false',
 			'enable_scroll_wheel_zoom' => 'false',
 			'show_post' => 'false',
 			'show_future' => 'false',
@@ -68,7 +68,7 @@ class GeoMashupOptions {
 			'background_color' => 'c0c0c0',
 			'add_overview_control' => 'false',
 			'add_map_type_control' => array(),
-			'add_google_bar' => 'true',
+			'add_google_bar' => 'false',
 			'enable_scroll_wheel_zoom' => 'false',
 			'click_to_load' => 'false',
 	 		'click_to_load_text' => '' ), 
@@ -81,7 +81,7 @@ class GeoMashupOptions {
 			'background_color' => 'c0c0c0',
 			'add_overview_control' => 'false',
 			'add_map_type_control' => array(),
-			'add_google_bar' => 'true',
+			'add_google_bar' => 'false',
 			'enable_scroll_wheel_zoom' => 'false',
 			'marker_select_info_window' => 'true',
 			'marker_select_highlight' => 'false',
@@ -196,7 +196,7 @@ class GeoMashupOptions {
 		$settings = get_option ( 'geo_mashup_options' );
 		if ( is_array ( $settings ) ) {
 			$settings = $this->convert_old_settings ( $settings );
-			$this->set_valid_options ( $settings );
+			$this->options = $this->valid_options ( $settings, $this->default_options, $add_missing = true );
 		} else {
 			$failed_options = $settings;
 			if ( is_string ( $settings ) && !empty ( $settings ) ) {
@@ -311,11 +311,12 @@ class GeoMashupOptions {
 	 * @since 1.2
 	 * @access private
 	 *
-	 * @param option_array An array of options to validate.
-	 * @param defaults Opional array of valid default values.
+	 * @param array $option_array An array of options to validate.
+	 * @param array $defaults Optional array of valid default values.
+	 * @param boolean $add_missing Set if input is not from a form, so missing values are not unchecked checkboxes and should get default values.
 	 * @return array Valid options.
 	 */
-	function valid_options ( $option_array, $defaults = null ) {
+	function valid_options ( $option_array, $defaults = null, $add_missing = false ) {
 		$valid_options = array ( );
 		if ( is_null ( $defaults ) ) {
 			$defaults = ( empty ( $this->options ) ) ? $this->default_options : $this->options;
@@ -333,8 +334,8 @@ class GeoMashupOptions {
 				}
 			} else {
 				// Value in question is invalid
-				if ( empty ( $option_array[$key] ) && in_array ($default_value, array ( 'true', 'false' ) ) ) {
-					// Convert empty booleans to false 
+				if ( ! $add_missing and empty ( $option_array[$key] ) and in_array ($default_value, array ( 'true', 'false' ) ) ) {
+					// Convert empty booleans to false to handle unchecked checkboxes
 					$valid_options[$key] = 'false';
 				} else { 
 					$valid_options[$key] = $default_value;
