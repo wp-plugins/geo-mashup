@@ -3,7 +3,7 @@
 Plugin Name: Geo Mashup
 Plugin URI: http://code.google.com/p/wordpress-geo-mashup/ 
 Description: Save location for posts and pages, or even users and comments. Display these locations on Google maps. Make WordPress into your GeoCMS.
-Version: 1.3.6
+Version: 1.3.7
 Author: Dylan Kuhn
 Author URI: http://www.cyberhobo.net/
 Minimum WordPress Version Required: 2.8
@@ -170,7 +170,7 @@ class GeoMashup {
 		}
 		define('GEO_MASHUP_MAX_ZOOM', 20);
 		// Make numeric versions: -.02 for alpha, -.01 for beta
-		define('GEO_MASHUP_VERSION', '1.3.6');
+		define('GEO_MASHUP_VERSION', '1.3.7');
 		define('GEO_MASHUP_DB_VERSION', '1.3');
 	}
 
@@ -491,21 +491,6 @@ class GeoMashup {
 				echo '<meta name="ICBM" content="' . esc_attr( $loc->lat . ', ' . $loc->lng ) . '" />' . "\n";
 				echo '<meta name="DC.title" content="' . esc_attr( $title ) . '" />' . "\n";
 				echo '<meta name="geo.position" content="' .  esc_attr( $loc->lat . ';' . $loc->lng ) . '" />' . "\n";
-			}
-		}
-		else
-		{
-			$saved_locations = GeoMashupDB::get_saved_locations( );
-			if ( !empty( $saved_locations ) )
-			{
-				foreach ( $saved_locations as $saved_location ) {
-					if ( $saved_location->saved_name == 'default' ) {
-						$title = esc_html(convert_chars(strip_tags(get_bloginfo('name'))));
-						echo '<meta name="ICBM" content="' . esc_attr( $saved_location->lat . ', ' . $saved_location->lon ) . '\" />'. "\n";
-						echo '<meta name="DC.title" content="' . esc_attr( $title ) . '" />' . "\n";
-						echo '<meta name="geo.position" content="' . esc_attr( $saved_location->lat . ';' . $saved_location->lon ) . '\" />' . "\n";
-					}
-				}
 			}
 		}
 	}
@@ -1076,7 +1061,17 @@ class GeoMashup {
 					if ( 'country_name' == $field ) { 
 						array_push( $values, GeoMashupDB::get_administrative_name( $location['country_code'] ) );
 					} else if ( 'admin_name' == $field ) {
-						array_push( $values, GeoMashupDB::get_administrative_name( $location['country_code'], $location['admin_code'] ) );
+						$admin_name = GeoMashupDB::get_cached_administrative_name( $location['country_code'], $location['admin_code'] );
+						if ( empty( $admin_name ) ) {
+							$subdiv = GeoMashupDB::get_geonames_subdivision( $location['lat'], $location['lng'] );
+							if ( empty( $subdiv ) ) {
+								array_push( $values, $admin_code );
+							} else {
+								array_push( $values, GeoMashupDB::get_administrative_name( $subdiv['country_code'], $subdiv['admin_code'] ) );
+							}
+						} else {
+							array_push( $values, $admin_name );
+						}
 					} else {
 						array_push( $values, '' );
 					}
