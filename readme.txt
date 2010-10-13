@@ -3,8 +3,8 @@ Contributors: cyberhobo
 Donate Link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=11045324
 Tags: map, maps, google maps, google map, mapping, mashup, geo, google, geocms
 Requires at least: 2.8
-Tested up to: 2.9.2
-Stable tag: 1.3
+Tested up to: 3.0.1
+Stable tag: 1.3.7
 
 Include Google maps in posts and pages, and map posts, pages, and other objects on global maps. Make WordPress into a GeoCMS.
 
@@ -15,7 +15,7 @@ These objects can then be presented on interactive Google maps in many ways.
 
 = Examples =
 
-There's a community sourced [list of examples in action](http://groups.google.com/group/wordpress-geo-mashup-plugin/web/examples-in-action).
+There's a community sourced [list of examples in action](http://code.google.com/p/wordpress-geo-mashup/wiki/ExamplesInAction).
 People do all kinds of amazing things with Geo Mashup.
 
 = Features =
@@ -58,10 +58,12 @@ and the [tag reference](http://code.google.com/p/wordpress-geo-mashup/wiki/TagRe
 
 = Translations =
 
+* French updated in version 1.3.7
+* Spanish by [Reven](http://www.reven.org/blog/2010/03/15/traduccion-de-geo-mashup/) added in version 1.3.3
+* Swedish by [Joakim Green](http://www.joakimgreen.com/) added in version 1.3.3
+* German by [Thomas Morvay](http://internet-dienste.biz/) added in version 1.3.2
 * Italian by [Stefan Des](http://www.stefandes.com/) added in version 1.2.9
 * Belorussian by [FatCow](http://www.fatcow.com) added in version 1.2.8
-* German by Michel Honold added in version 1.1.3
-* French added in version 1.1
 
 Please contact the author if you'd like to add or update a translation.
 
@@ -80,8 +82,8 @@ to create a GeoCMS that puts you in control of all your content, including geogr
 
 = The Future =
 
-I would like to make WordPress a first-class GeoCMS, and also make working with
-maps in your blog as easy as working with images.
+I would like to make WordPress a first-class GeoCMS that gives you control over the storage and 
+presentation of your location data.
 
 Geo Mashup endures because it supplies me with [customization work](http://www.cyberhobo.net/hire-me/).
 If you are a developer interested in this kind of work, [contact me](http://groups.google.com/groups/profile?enc_user=uBuY-RQAAACbQmFlLULeJFU8ITpJlc8IOPANdqfI6prRsqjc7uCt1A). 
@@ -103,6 +105,27 @@ if you've added or changed things in the Geo Mashup plugin folder, please look a
 for the best way to keep your custom files safe moving forward.
 
 == Change Log ==
+
+= 1.3.7 =
+[milestone 1.3.7 changes](http://code.google.com/p/wordpress-geo-mashup/issues/list?can=1&q=Milestone%3D1.3.7)
+
+= 1.3.6 =
+[milestone 1.3.6 changes](http://code.google.com/p/wordpress-geo-mashup/issues/list?can=1&q=Milestone%3D1.3.6)
+
+= 1.3.5 =
+[milestone 1.3.5 changes](http://code.google.com/p/wordpress-geo-mashup/issues/list?can=1&q=Milestone%3D1.3.5)
+
+= 1.3.4 =
+[milestone 1.3.4 changes](http://code.google.com/p/wordpress-geo-mashup/issues/list?can=1&q=Milestone%3D1.3.4)
+
+= 1.3.3 =
+[milestone 1.3.3 changes](http://code.google.com/p/wordpress-geo-mashup/issues/list?can=1&q=Milestone%3D1.3.3)
+
+= 1.3.2 =
+[milestone 1.3.2 changes](http://code.google.com/p/wordpress-geo-mashup/issues/list?can=1&q=Milestone%3D1.3.2)
+
+= 1.3.1 =
+[milestone 1.3.1 changes](http://code.google.com/p/wordpress-geo-mashup/issues/list?can=1&q=Milestone%3D1.3.1)
 
 = 1.3 =
 [milestone 1.3 changes](http://code.google.com/p/wordpress-geo-mashup/issues/list?can=1&q=Milestone%3D1.3)

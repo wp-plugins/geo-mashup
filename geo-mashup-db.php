@@ -533,6 +533,8 @@ class GeoMashupDB {
 		// Country name - the easy case
 		$country_info_url = 'http://ws.geonames.org/countryInfo?country=' . urlencode( $country_code ) .
 			'&lang=' . urlencode( $language );
+		if( !class_exists( 'WP_Http' ) )
+			include_once( ABSPATH . WPINC. '/class-http.php' );
 		$http = new WP_Http();
 		$country_info_response = $http->get( $country_info_url, array( 'timeout' => 3.0 ) );
 		if ( is_wp_error( $country_info_response ) ) {
@@ -595,6 +597,8 @@ class GeoMashupDB {
 	function get_geonames_subdivision( $lat, $lng ) {
 		$result = array( );
 
+		if( !class_exists( 'WP_Http' ) )
+			include_once( ABSPATH . WPINC. '/class-http.php' );
 		$http = new WP_Http();
 		$response = $http->get( "http://ws.geonames.org/countrySubdivision?lat=$lat&lng=$lng", array( 'timeout' => 3.0 ) );
 		if ( !is_wp_error( $response ) ) {
@@ -641,6 +645,8 @@ class GeoMashupDB {
 			'&q=' . urlencode( $query ) .
 			'&output=xml&oe=utf8&sensor=false&gl=' . $language;
 
+		if( !class_exists( 'WP_Http' ) )
+			include_once( ABSPATH . WPINC. '/class-http.php' );
 		$http = new WP_Http();
 		$response = $http->get( $google_geocode_url, array( 'timeout' => 3.0 ) );
 		if ( is_wp_error( $response ) ) {
@@ -1151,6 +1157,7 @@ id.
 			$wpdb->prepare( 'ON gmlr.object_name = %s AND gmlr.location_id = gml.id ', $object_name ) .
 			"INNER JOIN {$object_store['table']} o ON o.{$object_store['id_column']} = gmlr.object_id";
 		$wheres = array( );
+		$groupby = '';
 		$having = '';
 
 		if ( 'post' == $object_name ) {
@@ -1239,6 +1246,8 @@ id.
 			if ( ! empty( $escaped_exclude_ids ) ) {
 				$wheres[] = 'tt.term_id NOT IN (' . implode( ',', $escaped_exclude_ids ) . ')';
 			}
+
+			$groupby = 'GROUP BY gmlr.object_id';
 		} // end if map_cat exists 
 
 		if ( isset( $query_args['object_id'] ) ) {
@@ -1264,10 +1273,11 @@ id.
 			$table_string = apply_filters( 'geo_mashup_locations_join', $table_string );
 			$where = apply_filters( 'geo_mashup_locations_where', $where );
 			$sort = apply_filters( 'geo_mashup_locations_orderby', $sort );
+			$groupby = apply_filters( 'geo_mashup_locations_groupby', $groupby );
 			$limit = apply_filters( 'geo_mashup_locations_limits', $limit );
 		}
 		
-		$query_string = "SELECT $field_string FROM $table_string $where $having $sort $limit";
+		$query_string = "SELECT $field_string FROM $table_string $where $groupby $having $sort $limit";
 
 		$wpdb->query( $query_string );
 		
