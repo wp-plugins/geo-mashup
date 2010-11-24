@@ -3,7 +3,7 @@
 Plugin Name: Geo Mashup
 Plugin URI: http://code.google.com/p/wordpress-geo-mashup/ 
 Description: Save location for posts and pages, or even users and comments. Display these locations on Google maps. Make WordPress into your GeoCMS.
-Version: 1.3.7
+Version: 1.3.8
 Author: Dylan Kuhn
 Author URI: http://www.cyberhobo.net/
 Minimum WordPress Version Required: 2.8
@@ -133,13 +133,11 @@ class GeoMashup {
 				add_filter( 'widget_text', 'do_shortcode' );
 			}
 
-			// To add the GeoRSS namespace to RSS feeds
-			add_action('rss_ns', array('GeoMashup', 'rss_ns'));
+			// To add the GeoRSS namespace to feeds (not available for RSS 0.92)
 			add_action('rss2_ns', array('GeoMashup', 'rss_ns'));
 			add_action('atom_ns', array('GeoMashup', 'rss_ns'));
 
-			// To add GeoRSS location to RSS feeds
-			add_action('rss_item', array('GeoMashup', 'rss_item'));
+			// To add GeoRSS location to feeds
 			add_action('rss2_item', array('GeoMashup', 'rss_item'));
 			add_action('atom_entry', array('GeoMashup', 'rss_item'));
 
@@ -170,7 +168,7 @@ class GeoMashup {
 		}
 		define('GEO_MASHUP_MAX_ZOOM', 20);
 		// Make numeric versions: -.02 for alpha, -.01 for beta
-		define('GEO_MASHUP_VERSION', '1.3.7');
+		define('GEO_MASHUP_VERSION', '1.3.8');
 		define('GEO_MASHUP_DB_VERSION', '1.3');
 	}
 
@@ -451,19 +449,21 @@ class GeoMashup {
 			'post_type' => 'attachment',
 			'numberposts' => null,
 			'post_status' => null,
+			'post_mime_type' => array(
+				'application/vnd.google-earth.kml+xml',
+				'application/vnd.google-earth.kmz',
+				'application/octet-stream'
+			),
 			'post_parent' => $post_id
 			); 
 		$attachments = get_posts($args);
 		$urls = array();
 		if ($attachments) {
 			foreach ($attachments as $attachment) {
-				$attachment_url = $attachment->guid;
-				$dot_pos = stripos( $attachment_url, '.kml');
-				if ( $dot_pos === false ) {
-					$dot_pos = stripos( $attachment_url, '.kmz');
-				}
-				if ( $dot_pos == strlen( $attachment_url ) - 4) {
-					array_push($urls,$attachment_url);
+				$url = wp_get_attachment_url( $attachment->ID ); 
+				// Backwards compatibility: include KML attachments with the incorrect octet-stream mime type
+				if ( 'application/octet-stream' != $attachment->post_mime_type or 'kml' == substr( $url, -3 ) ) {
+					array_push( $urls, $url );
 				}
 			}
 		}
@@ -532,7 +532,11 @@ class GeoMashup {
 
 					// Include post author
 					$author = get_userdata( $object->post_author );
-					$author_name = $author->display_name;
+					if ( empty( $author ) ) {
+						$author_name = '';
+					} else {
+						$author_name = $author->display_name;
+					}
 				}
 
 				$json_object = array(
