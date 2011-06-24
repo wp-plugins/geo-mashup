@@ -3,7 +3,7 @@
 Plugin Name: Geo Mashup
 Plugin URI: http://code.google.com/p/wordpress-geo-mashup/ 
 Description: Save location for posts and pages, or even users and comments. Display these locations on Google maps. Make WordPress into your GeoCMS.
-Version: 1.3.10
+Version: 1.3.11
 Author: Dylan Kuhn
 Author URI: http://www.cyberhobo.net/
 Minimum WordPress Version Required: 2.8
@@ -168,7 +168,7 @@ class GeoMashup {
 		}
 		define('GEO_MASHUP_MAX_ZOOM', 20);
 		// Make numeric versions: -.02 for alpha, -.01 for beta
-		define('GEO_MASHUP_VERSION', '1.3.10');
+		define('GEO_MASHUP_VERSION', '1.3.10.1');
 		define('GEO_MASHUP_DB_VERSION', '1.3');
 	}
 
@@ -183,7 +183,7 @@ class GeoMashup {
 		global $geo_mashup_options;
 
 		// Other plugins could want the google-jsapi script
-		wp_register_script( 'google-jsapi', 'http://www.google.com/jsapi?key='.$geo_mashup_options->get('overall', 'google_key') );
+		wp_register_script( 'google-jsapi', 'https://www.google.com/jsapi?key='.$geo_mashup_options->get('overall', 'google_key') );
 		if (is_admin()) {
 			if ( isset($_GET['page']) &&  GEO_MASHUP_PLUGIN_NAME === $_GET['page'] ) {
 				wp_enqueue_script( 'jquery-ui-tabs' );
@@ -670,18 +670,20 @@ class GeoMashup {
 			case 'single':
 				$url_params['map_content'] = 'single';
 				$url_params += $geo_mashup_options->get ( 'single_map', $single_option_keys );
-				if ( 'post' == $object_name ) {
-					$url_params['object_id'] = $wp_query->post->ID;
-				} else if ( 'user' == $object_name ) {
-					$url_params['object_id'] = $wp_query->post->post_author;
-				} else if ( 'comment' == $object_name ) {
-					$url_params['object_id'] = get_comment_ID();
-					if ( empty( $url_params['object_id'] ) ) { 
-						return '<!-- ' . __( 'Geo Mashup found no current object to map', 'GeoMashup' ) . '-->';
-					}
-					$location = GeoMashupDB::get_object_location( $object_name, $object_id ); 
-					if ( empty( $location ) ) {
-						return '<!-- ' . __( 'Geo Mashup ommitted a map for an object with no location', 'GeoMashup' ) . '-->';
+				if ( empty( $atts['object_id'] ) ) {
+					if ( 'post' == $object_name ) {
+						$url_params['object_id'] = $wp_query->post->ID;
+					} else if ( 'user' == $object_name ) {
+						$url_params['object_id'] = $wp_query->post->post_author;
+					} else if ( 'comment' == $object_name ) {
+						$url_params['object_id'] = get_comment_ID();
+						if ( empty( $url_params['object_id'] ) ) {
+							return '<!-- ' . __( 'Geo Mashup found no current object to map', 'GeoMashup' ) . '-->';
+						}
+						$location = GeoMashupDB::get_object_location( $object_name, $object_id );
+						if ( empty( $location ) ) {
+							return '<!-- ' . __( 'Geo Mashup ommitted a map for an object with no location', 'GeoMashup' ) . '-->';
+						}
 					}
 				}
 				break;
