@@ -19,17 +19,17 @@ There's a community sourced [list of examples in action](http://code.google.com/
 
 = Key Features =
 
-Geo Mashup, like !WordPress, has a simple interface for basic features,
+Geo Mashup, like WordPress, has a simple interface for basic features,
 templates for control of output, and APIs for endless customization options.
 Some popular features are:
 
-  * Use Google Maps v2 or v3, or [http://openstreetmap.org OpenStreeMap] as a map provider.
+  * Use Google Maps v2 or v3, or [OpenStreetMap](http://openstreetmap.org OpenStreeMap) as a map provider.
   * Global maps can present your posts in many ways
 	They can show just one category or custom post type, for example
 	Clicking on a post marker shows a customizable summary of the post or page in an info window
   * Location can be saved for all post types (including pages) users, and comments
-  * Synchronize [http://codex.wordpress.org/Geodata Geodata] with the Geo location mobile client and other plugins
-  * Support for both standard !WordPress [http://codex.wordpress.org/Shortcode_API shortcodes] and [http://codex.wordpress.org/Template_Tags/How_to_Pass_Tag_Parameters template tags] to add maps to your site.
+  * Synchronize [Geodata](http://codex.wordpress.org/Geodata) with the Geo location mobile client and other plugins
+  * Support for both standard WordPress [shortcodes](http://codex.wordpress.org/Shortcode_API) and [template tags](http://codex.wordpress.org/Template_Tags/How_to_Pass_Tag_Parameters template tags) to add maps to your site.
   * Reverse geocoding to fill in address information for locations
   * GeoRSS automatically added to feeds
   * Attach KML files to posts and pages
@@ -41,11 +41,11 @@ and the [tag reference](http://code.google.com/p/wordpress-geo-mashup/wiki/TagRe
 
 = Comparison to Other Mapping Plugins =
 
-Geo Mashup was one of the earliest !WordPress mapping plugins, first released
+Geo Mashup was one of the earliest WordPress mapping plugins, first released
 in 2005. Eventually the author began using it for freelance jobs, which he
 still does. As such Geo Mashup is more tailored to customization than ease of
 use, but many user-requested features have been
-[http://code.google.com/p/wordpress-geo-mashup/issues/list?can=1&q=type%3DEnhancement released] 
+[release](http://code.google.com/p/wordpress-geo-mashup/issues/list?can=1&q=type%3DEnhancement) 
 over the years. Geo Mashup creates three tables to optimize location
 searches.
 
@@ -53,8 +53,7 @@ It's just crazy how many mapping plugins have sprung up since then. If all
 those developers had worked together we'd have just a few much better plugins.
 I've been guilty of not reaching out to other authors. If you are a developer
 interested in working together for a better !WordPress mapping future, contact
-me via [http://code.google.com/u/@VRBQRl1TDhNFXQB5/ this site] or
-[http://www.cyberhobo.net/hire-me my site] and I'll work with you.
+me via [my site](http://www.cyberhobo.net/hire-me) and I'll work with you.
 
 = Support =
 
