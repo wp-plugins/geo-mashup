@@ -3,59 +3,63 @@ Contributors: cyberhobo
 Donate Link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=11045324
 Tags: map, maps, google maps, google map, mapping, mashup, geo, google, geocms
 Requires at least: 2.8
-Tested up to: 3.1
-Stable tag: 1.3.11
+Tested up to: 3.2
+Stable tag: 1.4
 
 Include Google maps in posts and pages, and map posts, pages, and other objects on global maps. Make WordPress into a GeoCMS.
 
 == Description ==
 
 This plugin lets you save location information with posts, pages, and other WordPress objects. 
-These objects can then be presented on interactive Google maps in many ways.
+These can then be presented on interactive Google maps in many ways.
 
 = Examples =
 
 There's a community sourced [list of examples in action](http://code.google.com/p/wordpress-geo-mashup/wiki/ExamplesInAction).
-People do all kinds of amazing things with Geo Mashup, and there's an 
-[active support group](http://groups.google.com/group/wordpress-geo-mashup-plugin).
 
-= Features =
+= Key Features =
 
-Geo Mashup, like WordPress, has a simple interface for basic features, templates for control of 
-output, and APIs for endless customization options.  Some popular features are:
+Geo Mashup, like !WordPress, has a simple interface for basic features,
+templates for control of output, and APIs for endless customization options.
+Some popular features are:
 
-* Once you have a [Google Maps API key](http://www.google.com/apis/maps/signup.html), 
-  you're ready to put maps just about anywhere on your site.
-
-* Global maps can present your posts in many ways
-
-	They can show just one category, for example
-
-	Context-sensitive template maps show the markers of currently displayed posts
-
-	Clicking on a post marker shows a customizable summary of the post or page in an info window 
-
-* Location can be saved for posts, pages, users, and comments
-
-* Location can also be embedded in post content for mobile blogging
-
-* Reverse geocoding to fill in address information for locations
-
-* Support for both standard WordPress shortcodes and template tags to add maps to your site.
-
-* GeoRSS automatically added to feeds
-
-* Attach KML files to posts and pages
-
-* Connect category markers with a colored line
-
-* Many more [enhancement requests][enh] implemented and underway.
-
-[enh]: http://code.google.com/p/wordpress-geo-mashup/issues/list?can=2&amp;q=type:Enhancement
+  * Use Google Maps v2 or v3, or [http://openstreetmap.org OpenStreeMap] as a map provider.
+  * Global maps can present your posts in many ways
+	They can show just one category or custom post type, for example
+	Clicking on a post marker shows a customizable summary of the post or page in an info window
+  * Location can be saved for all post types (including pages) users, and comments
+  * Synchronize [http://codex.wordpress.org/Geodata Geodata] with the Geo location mobile client and other plugins
+  * Support for both standard !WordPress [http://codex.wordpress.org/Shortcode_API shortcodes] and [http://codex.wordpress.org/Template_Tags/How_to_Pass_Tag_Parameters template tags] to add maps to your site.
+  * Reverse geocoding to fill in address information for locations
+  * GeoRSS automatically added to feeds
+  * Attach KML files to posts and pages
+  * Connect category markers with a colored line
 
 If you need features that are aren't listed here, check 
 [the documentation](http://code.google.com/p/wordpress-geo-mashup/wiki/Documentation) 
 and the [tag reference](http://code.google.com/p/wordpress-geo-mashup/wiki/TagReference). 
+
+= Comparison to Other Mapping Plugins =
+
+Geo Mashup was one of the earliest !WordPress mapping plugins, first released
+in 2005. Eventually the author began using it for freelance jobs, which he
+still does. As such Geo Mashup is more tailored to customization than ease of
+use, but many user-requested features have been
+[http://code.google.com/p/wordpress-geo-mashup/issues/list?can=1&q=type%3DEnhancement released] 
+over the years. Geo Mashup creates three tables to optimize location
+searches.
+
+It's just crazy how many mapping plugins have sprung up since then. If all
+those developers had worked together we'd have just a few much better plugins.
+I've been guilty of not reaching out to other authors. If you are a developer
+interested in working together for a better !WordPress mapping future, contact
+me via [http://code.google.com/u/@VRBQRl1TDhNFXQB5/ this site] or
+[http://www.cyberhobo.net/hire-me my site] and I'll work with you.
+
+= Support =
+
+The author monitors [WP Questions](http://wpquestions.com/affiliates/register/name/cyberhobo),
+and there is a public [Google Group](http://groups.google.com/group/wordpress-geo-mashup-plugin).
 
 = Translations =
 
@@ -79,20 +83,8 @@ for more.
 
 = Mashup Ingredients =
 
-Geo Mashup combines WordPress, [Google Maps](http://maps.google.com), and [GeoNames](http://geonames.org) 
-to create a GeoCMS that puts you in control of all your content, including geographic data.
-
-= The Future =
-
-I would like to make WordPress a first-class GeoCMS that gives you control over the storage and 
-presentation of your location data.
-
-Geo Mashup endures because it supplies me with [customization work](http://www.cyberhobo.net/hire-me/).
-If you are a developer interested in this kind of work, [contact me](http://groups.google.com/groups/profile?enc_user=uBuY-RQAAACbQmFlLULeJFU8ITpJlc8IOPANdqfI6prRsqjc7uCt1A). 
-More of us can make Geo Mashup better, which will in turn supply us with more work.
-
-[Donations](http://www.cyberhobo.net/downloads/geo-mashup-plugin) have also encouraged me keep
-developing - thanks to those who have donated.
+Geo Mashup combines WordPress, [Google Maps](http://maps.google.com), [OpenStreetMap](http://openstreetmap.org)
+and [GeoNames](http://geonames.org) to create a GeoCMS that puts you in control of all your content, including geographic data.
 
 == Installation ==
 
@@ -107,6 +99,9 @@ if you've added or changed things in the Geo Mashup plugin folder, please look a
 for the best way to keep your custom files safe moving forward.
 
 == Change Log ==
+
+= 1.4 =
+[milestone 1.4 changes](http://code.google.com/p/wordpress-geo-mashup/issues/list?can=1&q=Milestone%3D1.4)
 
 = 1.3.11 =
 [milestone 1.3.11 changes](http://code.google.com/p/wordpress-geo-mashup/issues/list?can=1&q=Milestone%3D1.3.11)
@@ -213,9 +208,5 @@ Fixed:
 
 = 1.2 =
 
-* [New features][ddoc12beta1] and 
-* [more new features][ddoc12beta2].
-
-[ddoc12beta1]: http://code.google.com/p/wordpress-geo-mashup/wiki/DocChangesForOneTwoBetaOne
-[ddoc12beta2]: http://code.google.com/p/wordpress-geo-mashup/wiki/DocChangesForOneTwoBetaTwo#New_Features
+* New features lost to the fogs of time.
 
