@@ -5,7 +5,7 @@ Tags: map, maps, google maps, google map, mapping, mashup, geo, google, geocms
 Requires at least: 2.8
 Tested up to: 3.2
 Stable tag: 1.4
-
+ 
 Include Google maps in posts and pages, and map posts, pages, and other objects on global maps. Make WordPress into a GeoCMS.
 
 == Description ==
