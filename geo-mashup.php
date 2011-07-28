@@ -3,7 +3,7 @@
 Plugin Name: Geo Mashup
 Plugin URI: http://code.google.com/p/wordpress-geo-mashup/ 
 Description: Save location for posts and pages, or even users and comments. Display these locations on Google maps. Make WordPress into your GeoCMS.
-Version: 1.4
+Version: 1.4.1
 Author: Dylan Kuhn
 Author URI: http://www.cyberhobo.net/
 Minimum WordPress Version Required: 3.0
@@ -184,7 +184,7 @@ class GeoMashup {
 		define('GEO_MASHUP_URL_PATH', trim( plugin_dir_url( __FILE__ ), '/' ) );
 		define('GEO_MASHUP_MAX_ZOOM', 20);
 		// Make numeric versions: -.02 for alpha, -.01 for beta
-		define('GEO_MASHUP_VERSION', '1.4');
+		define('GEO_MASHUP_VERSION', '1.4.1');
 		define('GEO_MASHUP_DB_VERSION', '1.3');
 	}
 
@@ -258,7 +258,12 @@ class GeoMashup {
 		// Use the .dev version if SCRIPT_DEBUG is set or there is no minified version
 		if ( ( defined( 'SCRIPT_DEBUG' ) and SCRIPT_DEBUG ) or !is_readable( path_join( GEO_MASHUP_DIR_PATH, $src ) ) )
 			$src = preg_replace( '/(\.\w*)$/', '.dev$1', $src );
-		wp_register_script( $handle, plugins_url( $src, __FILE__ ), $deps, $ver, $in_footer );
+		wp_register_script( 
+				$handle, 
+				plugins_url( $src, __FILE__ ), 
+				$deps, 
+				$ver, 
+				$in_footer );
 	}
 
 	/**
@@ -287,7 +292,13 @@ class GeoMashup {
 	 */
 	public static function wp_footer() {
 		if ( self::$add_loader_script ) {
-			self::register_script( 'geo-mashup-loader', 'js/loader.js', array(), GEO_MASHUP_VERSION, true );
+			self::register_script( 
+				'geo-mashup-loader', 
+				'js/loader.js', 
+				array(), 
+				GEO_MASHUP_VERSION, 
+				true );
+				
 			wp_print_scripts( 'geo-mashup-loader' );
 		}
 	}
