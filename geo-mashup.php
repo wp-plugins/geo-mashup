@@ -3,7 +3,7 @@
 Plugin Name: Geo Mashup
 Plugin URI: http://code.google.com/p/wordpress-geo-mashup/ 
 Description: Save location for posts and pages, or even users and comments. Display these locations on Google maps. Make WordPress into your GeoCMS.
-Version: 1.4
+Version: 1.4.2
 Author: Dylan Kuhn
 Author URI: http://www.cyberhobo.net/
 Minimum WordPress Version Required: 3.0
@@ -184,7 +184,7 @@ class GeoMashup {
 		define('GEO_MASHUP_URL_PATH', trim( plugin_dir_url( __FILE__ ), '/' ) );
 		define('GEO_MASHUP_MAX_ZOOM', 20);
 		// Make numeric versions: -.02 for alpha, -.01 for beta
-		define('GEO_MASHUP_VERSION', '1.4');
+		define('GEO_MASHUP_VERSION', '1.4.2');
 		define('GEO_MASHUP_DB_VERSION', '1.3');
 	}
 
@@ -258,7 +258,12 @@ class GeoMashup {
 		// Use the .dev version if SCRIPT_DEBUG is set or there is no minified version
 		if ( ( defined( 'SCRIPT_DEBUG' ) and SCRIPT_DEBUG ) or !is_readable( path_join( GEO_MASHUP_DIR_PATH, $src ) ) )
 			$src = preg_replace( '/(\.\w*)$/', '.dev$1', $src );
-		wp_register_script( $handle, plugins_url( $src, __FILE__ ), $deps, $ver, $in_footer );
+		wp_register_script( 
+				$handle, 
+				plugins_url( $src, __FILE__ ), 
+				$deps, 
+				$ver, 
+				$in_footer );
 	}
 
 	/**
@@ -287,7 +292,13 @@ class GeoMashup {
 	 */
 	public static function wp_footer() {
 		if ( self::$add_loader_script ) {
-			self::register_script( 'geo-mashup-loader', 'js/loader.js', array(), GEO_MASHUP_VERSION, true );
+			self::register_script( 
+				'geo-mashup-loader', 
+				'js/loader.js', 
+				array(), 
+				GEO_MASHUP_VERSION, 
+				true );
+				
 			wp_print_scripts( 'geo-mashup-loader' );
 		}
 	}
@@ -716,11 +727,8 @@ public static function wp_head() {
 		if ( $map_content == 'single') {
 			$location = GeoMashupDB::get_object_location( $object_name, $object_id, ARRAY_A );
 			$options = $geo_mashup_options->get( 'single_map' );
-			if ( !empty( $location ) ) {
+			if ( !empty( $location ) ) 
 				$map_data['object_data'] = array( 'objects' => array( $location ) );
-				$map_data['center_lat'] = $location['lat'];
-				$map_data['center_lng'] = $location['lng'];
-			}
 			$map_data = array_merge ( $options, $map_data );
 			if ( 'post' == $object_name ) {
 				$kml_urls = self::get_kml_attachment_urls( $object_id );
@@ -1264,17 +1272,25 @@ public static function wp_head() {
 	 * global map page. 
 	 *
 	 * @since 1.3
+	 * @todo What would happen if the global map is not a post map?
 	 *
 	 * @return string The URL, empty if no current location is found.
 	 */
 	public static function show_on_map_link_url( $args = null ) {
-		global $geo_mashup_options;
+		global $geo_mashup_options, $post;
 
 		$defaults = array( 'zoom' => '' );
 		$args = wp_parse_args( $args, $defaults );
 
 		$url = '';
 		$location = self::current_location();
+
+		if ( !$location and $post ) {
+
+			// Could be in a WP_Query loop that set the global post
+			$location = GeoMashupDb::get_post_location( $post->ID );
+		}
+
 		if ( $location ) {
 			$url = get_page_link($geo_mashup_options->get('overall', 'mashup_page'));
 			if ( !$url ) {

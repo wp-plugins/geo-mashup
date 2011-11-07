@@ -16,6 +16,20 @@ Mapstraction: {
 				scrollwheel: false
 			};
 
+			// Background color can only be set at construction
+			// To provide some control, adopt any explicit element style
+			var backgroundColor = null;
+			if ( element.currentStyle ) {
+				backgroundColor = element.currentStyle['background-color'];
+			}
+			else if ( window.getComputedStyle ) {
+				backgroundColor = document.defaultView.getComputedStyle(element, null).getPropertyValue('background-color');
+			}
+			// Only set the background if a style has been explicitly set, ruling out the "transparent" default
+			if ( backgroundColor && 'transparent' !== backgroundColor ) {
+				myOptions.backgroundColor = backgroundColor;
+			}
+
 			// find controls
 			if (!this.addControlsArgs && loadoptions.addControlsArgs) {
 				this.addControlsArgs = loadoptions.addControlsArgs;
@@ -33,6 +47,10 @@ Mapstraction: {
 				if (this.addControlsArgs.map_type) {
 					myOptions.mapTypeControl = true;
 					myOptions.mapTypeControlOptions = {style: google.maps.MapTypeControlStyle.DEFAULT};
+				}
+				if (this.addControlsArgs.overview) {
+					myOptions.overviewMapControl = true;
+					myOptions.overviewMapControlOptions = {opened: true};
 				}
 			}
 		
@@ -108,7 +126,8 @@ Mapstraction: {
   	},
 
 	addControls: function( args ) {
-		var map = this.maps[this.api];	
+		var map = this.maps[this.api];
+		var myOptions;
 		// remove old controls
 
 		// Google has a combined zoom and pan control.
@@ -120,7 +139,7 @@ Mapstraction: {
 			}
 		}
 		if (args.scale){
-			var myOptions = {
+			myOptions = {
 				scaleControl:true,
 				scaleControlOptions: {style:google.maps.ScaleControlStyle.DEFAULT}				
 			};
@@ -129,6 +148,14 @@ Mapstraction: {
 		}
 		if (args.map_type){
 			this.addMapTypeControls();
+		}
+		if (args.overview) {
+			myOptions = {
+				overviewMapControl: true,
+				overviewMapControlOptions: {opened: true}
+			};
+			map.setOptions(myOptions);
+			this.addControlsArgs.overview = true;
 		}
 	},
 

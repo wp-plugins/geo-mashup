@@ -15,21 +15,75 @@ PURPOSE. See the GNU General Public License for more
 details.
 */
 
+/**
+ * @fileOverview 
+ * The base Geo Mashup code that is independent of mapping API.
+ */
 
 /*global GeoMashup */
+// These globals are retained for backward custom javascript compatibility
 /*global customizeGeoMashup, customizeGeoMashupMap, customGeoMashupColorIcon, customGeoMashupCategoryIcon */
 /*global customGeoMashupSinglePostIcon, customGeoMashupMultiplePostImage */
 
 var GeoMashup, customizeGeoMashup, customizeGeoMashupMap, customGeoMashupColorIcon, customGeoMashupCategoryIcon, 
 	customGeoMashupSinglePostIcon, customGeoMashupMultiplePostImage;
 
+/** 
+ * @name GeoMashupObject
+ * @class This type represents an object Geo Mashup can place on the map.
+ * It has no constructor, but is instantiated as an object literal.
+ * Custom properties can be added, but some are present by default.
+ * 
+ * @property {String} object_name The type of object: post, user, comment, etc.
+ * @property {String} object_id A unique identifier for the object
+ * @property {String} title
+ * @property {Number} lat Latitude
+ * @property {Number} lng Longitude
+ * @property {String} author_name The name of the object author
+ * @property {Array} categories The IDs of the categories this object belongs to
+ * @property {GeoMashupIcon} icon The default icon to use for the object
+ */
+ 
 /**
- * The base Geo Mashup object is built with code that is independent of mapping API.
+ * @name GeoMashupIcon
+ * @class This type represents an icon that can be used for a map marker.
+ * It has no constructor, but is instantiated as an object literal.
+ * @property {String} image URL of the icon image
+ * @property {String} iconShadow URL of the icon shadow image
+ * @property {Array} iconSize Pixel width and height of the icon
+ * @property {Array} shadowSize Pixel width and height of the icon shadow 
+ * @property {Array} iconAnchor Pixel offset from top left: [ right, down ]
+ * @property {Array} infoWindowAnchor Pixel offset from top left: [ right, down ]
+ */
+
+/** 
+ * @name GeoMashupOptions
+ * @class This type represents options used for a specific Geo Mashup map. 
+ * It has no constructor, but is instantiated as an object literal.
+ * Properties reflect the <a href="http://code.google.com/p/wordpress-geo-mashup/wiki/TagReference#Map">map tag parameters</a>.
+ */
+
+/**
+ * @name VisibilityFilter
+ * @class This type represents objects used to filter object visibility.
+ * It has no constructor, but is instantiated as an object literal.
  *
- * Used as an extendible namespace object.
+ * @name ContentFilter#visible
+ * @property {Boolean} visible Whether the object is currently visible
+ */
+
+/**
+ * @namespace Used more as a singleton than a namespace for data and methods for a single Geo Mashup map.
  *
- * Violates the convention that capitalized objects are designed to be used with the 
- * 'new' keyword - early coder ignorance.
+ * <p>Violates the convention that capitalized objects are designed to be used with the 
+ * 'new' keyword - an artifact of the age of the project. :o</p>
+ * 
+ * <p><strong>Note: Events are Actions</strong></p>
+ *
+ * <p>Actions available for use with GeoMashup.addAction() are documented as events.
+ * See the <a href="http://code.google.com/p/wordpress-geo-mashup/wiki/Documentation#Custom_JavaScript">custom javascript documentation</a>
+ * for an example.
+ * </p>
  */
 GeoMashup = {
 	actions : {},
@@ -42,23 +96,24 @@ GeoMashup = {
 	errors : [],
 	color_names : ['red','lime','blue','orange','yellow','aqua','green','silver','maroon','olive','navy','purple','gray','teal','fuchsia','white','black'],
 	colors : {
-		'red':'#ff0000',
-		'lime':'#00ff00',
-		'blue':'#0000ff',
-		'orange':'#ffa500',
-		'yellow':'#ffff00',
-		'aqua':'#00ffff',
-		'green':'#008000',
-		'silver':'#c0c0c0',
-		'maroon':'#800000',
-		'olive':'#808000',
-		'navy':'#000080',
-		'purple':'#800080',
-		'gray':'#808080',
-		'teal':'#008080',
-		'fuchsia':'#ff00ff',
+		'red':'#ff071e',
+		'lime':'#62d962',
+		'blue':'#9595ff',
+		'orange':'#fe8f00',
+		'yellow':'#f2f261',
+		'aqua':'#8eeff0',
+		'green':'#459234',
+		'silver':'#c2c2c2',
+		'maroon':'#ae1a40',
+		'olive':'#9f9b46',
+		'navy':'#30389d',
+		'purple':'#a54086',
+		'gray':'#9b9b9b',
+		'teal':'#13957b',
+		'fuchsia':'#e550e5',
 		'white':'#ffffff',
-		'black':'#000000'},
+		'black':'#000000'
+	},
 	firstLoad : true,
 
 	clone : function( obj ) {
@@ -76,6 +131,28 @@ GeoMashup = {
 		}
 	},
 
+	locationCache : function( latlng, key ) {
+		if ( !( latlng in this.locations ) ) {
+			return false;
+		}
+		if ( ! this.locations[latlng].cache ) {
+			this.locations[latlng].cache = {};
+		}
+		if ( !( key in this.locations[latlng].cache ) ) {
+			this.locations[latlng].cache[key] = {};
+		}
+		return this.locations[latlng].cache[key];
+	},
+
+	/**
+	 * Add an action callback to extend Geo Mashup functionality.
+	 * 
+	 * Essentially an event interface. Might make sense to convert to 
+	 * Mapstraction events in the future.
+	 *
+	 * @param {String} name The name of the action (event).
+	 * @param {Function} callback The function to call when the action occurs
+	 */
 	addAction : function ( name, callback ) {
 		if ( typeof callback !== 'function' ) {
 			return false;
@@ -88,6 +165,14 @@ GeoMashup = {
 		return true;
 	},
 
+	/**
+	 * Fire all callbacks for an action.
+    * 
+	 * Essentially an event interface. Might make sense to convert to 
+	 * Mapstraction events in the future.
+	 *
+	 * @param {String} name The name of the action (event).
+	 */
 	doAction : function ( name ) {
 		var args, i;
 
@@ -138,6 +223,15 @@ GeoMashup = {
 		}
 	},
 
+	/**
+	 * Determine whether a category ID is an ancestor of another.
+	 * 
+	 * Works on the loadedMap action and after, when the category hierarchy has been
+	 * determined.
+	 * 
+	 * @param {String} ancestor_id The category ID of the potential ancestor
+	 * @param {String} child_id The category ID of the potential child
+	 */
 	isCategoryAncestor : function(ancestor_id, child_id) {
 		if (this.opts.category_opts[child_id].parent_id) {
 			if (this.opts.category_opts[child_id].parent_id == ancestor_id) {
@@ -186,6 +280,10 @@ GeoMashup = {
 		return null;
 	},
 
+	/**
+	 * Hide a category and all its child categories.
+	 * @param {String} category_id The ID of the category to hide
+	 */
 	hideCategoryHierarchy : function(category_id) {
 		var child_id;
 
@@ -195,6 +293,10 @@ GeoMashup = {
 		});
   },
 
+	/**
+	 * Show a category and all its child categories.
+	 * @param {String} category_id The ID of the category to show
+	 */
 	showCategoryHierarchy : function(category_id) {
 		var child_id;
 
@@ -204,6 +306,10 @@ GeoMashup = {
 		});
   },
 
+	/**
+	 * Select a tab of the tabbed category index control.
+	 * @param {String} select_category_id The ID of the category tab to select
+	 */
 	categoryTabSelect : function(select_category_id) {
 		var i, tab_div, tab_list_element, tab_element, id_match, category_id, index_div;
 
@@ -244,6 +350,11 @@ GeoMashup = {
 		}
 	},
 
+	/**
+	 * Get the DOM ID of the element containing a category index in the 
+	 * tabbed category index control.
+	 * @param {String} category_id The category ID
+	 */
 	categoryIndexId : function(category_id) {
 		return 'gm-cat-index-' + category_id;
 	},
@@ -459,6 +570,10 @@ GeoMashup = {
 		}
 	}, 
 
+	/**
+	 * Get the DOM element where the full post content should be displayed, if any.
+	 * @returns {DOMElement} The element, or undefined if none.
+	 */
 	getShowPostElement : function() {
 	  if ( this.have_parent_access && !this.show_post_element && this.opts.name) {
 			this.show_post_element = parent.document.getElementById(this.opts.name + '-post');
@@ -469,6 +584,11 @@ GeoMashup = {
 		return this.show_post_element;
 	},
 
+	/**
+	 * Change the target of links in HTML markup to target the parent frame.
+	 * @param {String} markup
+	 * @returns {String} Modified markup
+	 */
 	parentizeLinksMarkup : function( markup ) {
 		var container = document.createElement( 'div' );
 		container.innerHTML = markup;
@@ -476,6 +596,10 @@ GeoMashup = {
 		return container.innerHTML;
 	},
 
+	/**
+	 * Change the target of links in a DOM element to target the parent frame.
+	 * @param {DOMElement} node The element to change
+	 */
 	parentizeLinks : function( node ) {
 		var i, links = node.getElementsByTagName('a');
 		if ( parent ) {
@@ -487,58 +611,111 @@ GeoMashup = {
 		}
 	},
 
+	/**
+	 * Display a spinner icon for the map.
+	 */
 	showLoadingIcon : function() {
 		if ( ! this.spinner_div.parentNode ) {
 			this.container.appendChild( this.spinner_div );
 		}
 	},
 
+	/**
+	 * Hide the spinner icon for the map.
+	 */
 	hideLoadingIcon : function() {
 		if ( this.spinner_div.parentNode ) {
 			this.spinner_div.parentNode.removeChild( this.spinner_div );
 		}
 	},
 
+	/**
+	 * Get the objects at a specified location.
+	 * @param {LatLonPoint} point The query location
+	 * @returns {Array} The mapped objects at the query location
+	 */
 	getObjectsAtLocation : function( point ) {
 		return this.locations[point].objects;
 	},
 
+	/**
+	 * Get the objects at the location of a specified marker.
+	 * @param {Marker} marker 
+	 * @returns {Array} The mapped objects at the marker location
+	 */
 	getMarkerObjects : function( marker ) {
 		return this.getObjectsAtLocation( this.getMarkerLatLng( marker ) );
 	},
 
+	/**
+	 * Get the location coordinates for a marker.
+	 * @param {Marker} marker 
+	 * @returns {LatLonPoint} The marker coordinates
+	 */
 	getMarkerLatLng : function( marker ) {
 		// Provider override
 	},
 
+	/**
+	 * Obscure an existing marker with the highlighted "glow" marker.
+	 * @param {Marker} marker The existing marker
+	 */
 	addGlowMarker : function( marker ) {
 		// Provider override
 	},
 
+	/**
+	 * Open the info bubble for a marker.
+	 * @param {Marker} marker
+	 */
 	openInfoWindow : function( marker ) {
 		// Provider override
 	},
 
+	/**
+	 * Close the info bubble for a marker.
+	 * @param {Marker} marker
+	 */
 	closeInfoWindow : function( marker ) {
 		// provider override
 	},
 
+	/**
+	 * Remove the highlighted "glow" marker from the map if it exists.
+	 */
 	removeGlowMarker : function() {
 		// Provider override
 	},
 
+	/**
+	 * Hide any visible attachment layers on the map.
+	 */
 	hideAttachments : function() {
 		// Provider override
 	},
 
+	/**
+	 * Show any attachment layers associated with the objects represented
+	 * by a marker, loading the layer if necessary.
+	 * @param {Marker} marker
+	 */
 	showMarkerAttachments : function( marker ) {
 		// Provider override
 	},
 
+	/** 
+	 * Load full content for the objects/posts at a location into the 
+	 * full post display element.
+	 * @param {LatLonPoint} point
+	 */
 	loadFullPost : function( point ) {
 		// jQuery or provider override
 	},
 
+	/**
+	 * Select a marker.
+	 * @param {Marker} marker
+	 */
 	selectMarker : function( marker ) {
 		var point = this.getMarkerLatLng( marker );
 
@@ -556,19 +733,31 @@ GeoMashup = {
 			this.centerMarker( marker );
 		}
 		if ('full-post' !== this.opts.template && this.getShowPostElement()) {
-			if ( this.locations[point].post_html ) {
-				this.getShowPostElement().innerHTML = this.locations[point].post_html;
-			} else {
-				this.loadFullPost( point );
-			}
+			this.loadFullPost( point );
 		}
+		/**
+		 * A marker was selected.
+		 * @name GeoMashup#selectedMarker
+		 * @event
+		 * @param {GeoMashupOptions} properties Geo Mashup configuration data
+		 * @param {Marker} marker The selected marker
+		 * @param {Map} map The map containing the marker
+		 */
 		this.doAction( 'selectedMarker', this.opts, this.selected_marker, this.map );
 	},
 
+	/**
+	 * Center and optionally zoom to a marker.
+	 * @param {Marker} marker 
+	 * @param {Number} zoom Optional zoom level
+	 */
 	centerMarker : function ( marker, zoom ) {
 		// provider override
 	},
 
+	/**
+	 * De-select the currently selected marker if there is one.
+	 */
 	deselectMarker : function() {
 		var i, post_element = GeoMashup.getShowPostElement();
 		if ( post_element ) {
@@ -598,34 +787,70 @@ GeoMashup = {
 		// provider override
 	},
 
+	/**
+	 * Simulate a user click on the marker that represents a specified object.
+	 * @param {String} object_id The ID of the object.
+	 * @param {Number} try_count Optional number of times to try (in case the object 
+	 *   is still being loaded).
+	 */
 	clickObjectMarker : function(object_id, try_count) {
 		// provider override
 	},
 
+	/**
+	 * Backward compatibility for clickObjectMarker().
+	 * @deprecated
+	 */
 	clickMarker : function( object_id, try_count ) {
 		this.clickObjectMarker( object_id, try_count );
 	},
 
+	/**
+	 * Get the name of a category.
+	 * @param {String} category_id
+	 */
 	getCategoryName : function (category_id) {
 		return this.category_opts[category_id].name;
 	},
 
+	/**
+	 * Hide a marker.
+	 * @param {Marker} marker
+	 */
 	hideMarker : function( marker ) {
 		// Provider override
 	},
 
+	/**
+	 * Show a marker.
+	 * @param {Marker} marker
+	 */
 	showMarker : function( marker ) {
 		// Provider override
 	},
 
+	/**
+	 * Hide a line.
+	 * @param {Polyline} line
+	 */
 	hideLine : function( line ) {
 		// Provider override
 	},
 
+	/**
+	 * Show a line.
+	 * @param {Polyline} line
+	 */
 	showLine : function( line ) {
 		// Provider override
 	},
 
+	/**
+	 * Create a new geo coordinate object.
+	 * @param {Number} lat Latitude
+	 * @param {Number} lng Longitude
+	 * @returns {LatLonPoint} Coordinates
+	 */
 	newLatLng : function( lat, lng ) {
 		var latlng;
 		// Provider override
@@ -640,14 +865,24 @@ GeoMashup = {
 		// Provider override
 	},
 
-	makeMarkerMultiple : function( ) {
+	makeMarkerMultiple : function( marker ) {
 		// Provider override
 	},
 
+	setMarkerImage : function( marker, image_url ) {
+		// Provider override
+	},
+
+	/**
+	 * Zoom the map to loaded content.
+	 */
 	autoZoom : function( ) {
 		// Provider override
 	},
 
+	/**
+	 * If clustering is active, refresh clusters.
+	 */
 	recluster : function( ) {
 		// Provider override
 	},
@@ -672,7 +907,23 @@ GeoMashup = {
 			if (!icon) {
 				icon = this.colorIcon( color_name );
 			}
+			/**
+			 * A category icon is being assigned.
+			 * @name GeoMashup#categoryIcon
+			 * @event
+			 * @param {GeoMashupOptions} properties Geo Mashup configuration data
+			 * @param {GeoMashupIcon} icon
+			 * @param {String} category_id
+			 */
 			this.doAction( 'categoryIcon', this.opts, icon, category_id );
+			/**
+			 * A category icon is being assigned by color.
+			 * @name GeoMashup#colorIcon
+			 * @event
+			 * @param {GeoMashupOptions} properties Geo Mashup configuration data
+			 * @param {GeoMashupIcon} icon
+			 * @param {String} color_name
+			 */
 			this.doAction( 'colorIcon', this.opts, icon, color_name );
 
 			max_line_zoom = -1;
@@ -694,6 +945,9 @@ GeoMashup = {
 		}
 	},
 
+	/**
+	 * Show or hide markers according to current visibility criteria.
+	 */
 	updateMarkerVisibilities : function( ) {
 		this.forEach( this.locations, function( point, loc ) {
 			GeoMashup.updateMarkerVisibility( loc.marker, point );
@@ -702,28 +956,114 @@ GeoMashup = {
 	},
 
 	updateMarkerVisibility : function( marker, point ) {
-		var i, j, loc, obj, check_cat_id, options = {visible: false};
-
-		loc = this.locations[ point ];
-		for ( i=0; i<loc.objects.length; i+=1 ) {
-			obj = loc.objects[i];
-			for ( j=0; j<obj.categories.length; j+=1 ) {
-				check_cat_id = obj.categories[j];
-				if ( this.categories[check_cat_id] && this.categories[check_cat_id].visible ) {
-					options.visible = true;
-				}
-			}
-			this.doAction( 'objectVisibilityOptions', this.opts, options, obj, this.map );
-		}
-		this.doAction( 'markerVisibilityOptions', this.opts, options, loc.marker, this.map );
-
-		if ( options.visible ) {
+		if ( this.isMarkerOn( marker ) ) {
 			this.showMarker( marker );
 		} else {
 			this.hideMarker( marker );
 		}
 	},
 
+	isMarkerOn : function( marker ) {
+		var i, objects, visible_object_indices = [], filter = {visible: false};
+
+		objects = this.getMarkerObjects( marker );
+		for ( i = 0; i < objects.length; i += 1 ) {
+			if ( this.isObjectOn( objects[i] ) ) {
+				filter.visible = true;
+				visible_object_indices.push( i );
+			}
+		}
+
+		// Adjust marker icon based on current visible contents
+		if ( filter.visible ) {
+
+			if ( objects.length > 1 ) {
+
+				if ( visible_object_indices.length === 1 ) {
+					this.setMarkerImage( marker, objects[visible_object_indices[0]].icon.image );
+				} else {
+					this.makeMarkerMultiple( marker );
+				}
+
+			} else if ( objects[0].categories.length > 1 ) {
+
+				if ( objects[0].visible_categories.length === 1 ) {
+					this.setMarkerImage( marker, this.categories[objects[0].visible_categories[0]].icon.image );
+				} else {
+					this.setMarkerImage( marker, objects[0].icon.image );
+				}
+			}
+		}
+		/**
+		 * Visibility is being tested for a marker.
+		 * @name GeoMashup#markerVisibilityOptions
+		 * @event
+		 * @param {GeoMashupOptions} properties Geo Mashup configuration data
+		 * @param {VisibilityFilter} filter Test and set filter.visible
+		 * @param {Marker} marker The marker being tested
+		 * @param {Map} map The map for context
+		 */
+		this.doAction( 'markerVisibilityOptions', this.opts, filter, marker, this.map );
+
+		return filter.visible;
+	},
+
+	isObjectOn : function( obj ) {
+		var i, check_cat_id, filter = {visible: false};
+
+		obj.visible_categories = [];
+		if ( 0 === obj.categories.length ) {
+
+			// Objects without categories are visible by default
+			filter.visible = true;
+
+		} else {
+
+			// Check category visibility
+			for ( i = 0; i < obj.categories.length; i += 1 ) {
+				check_cat_id = obj.categories[i];
+				if ( this.categories[check_cat_id] && this.categories[check_cat_id].visible ) {
+					obj.visible_categories.push( check_cat_id );
+					filter.visible = true;
+				}
+			}
+
+		}
+
+		/**
+		 * Visibility is being tested for an object.
+		 * @name GeoMashup#objectVisibilityOptions
+		 * @event
+		 * @param {GeoMashupOptions} properties Geo Mashup configuration data
+		 * @param {VisibilityFilter} filter Test and set filter.visible
+		 * @param {Object} object The object being tested
+		 * @param {Map} map The map for context
+		 */
+		this.doAction( 'objectVisibilityOptions', this.opts, filter, obj, this.map );
+
+		return filter.visible;
+	},
+
+	/**
+	 * Extract the IDs of objects that are "on" (not filtered by a control).
+	 * @since 1.4.2
+	 * @param {Array} objects The objects to check
+	 * @returns {Array} The IDs of the "on" objects
+	 */
+	getOnObjectIDs : function( objects ) {
+		var i, object_ids = [];
+		for( i = 0; i < objects.length; i += 1 ) {
+			if ( this.isObjectOn( objects[i] ) ) {
+				object_ids.push( objects[i].object_id );
+			}
+		}
+		return object_ids;
+	},
+
+	/**
+	 * Hide markers and line for a category.
+	 * @param {String} category_id
+	 */
 	hideCategory : function(category_id) {
 		var i, loc;
 
@@ -746,6 +1086,10 @@ GeoMashup = {
 		this.updateVisibleList();
 	},
 
+	/**
+	 * Show markers for a category. Also show line if consistent with configuration.
+	 * @param {String} category_id
+	 */
 	showCategory : function(category_id) {
 		var i, point;
 
@@ -764,6 +1108,12 @@ GeoMashup = {
 		this.updateVisibleList();
 	},
 
+	/**
+	 * Add objects to the map.
+	 * @param {Object} response_data Data returned by a geo query.
+	 * @param {Boolean} add_category_info Whether to build and show category
+	 *   data for these objects, for legend or other category controls.
+	 */
 	addObjects : function(response_data, add_category_info) {
 		var i, j, object_id, point, category_id, marker, plus_image,
 			added_markers = [];
@@ -798,8 +1148,7 @@ GeoMashup = {
 				if (!this.locations[point]) {
 					// There are no other objects yet at this point, create a marker
 					this.extendLocationBounds( point );
-					this.locations[point] = {objects : [ response_data[i] ]};
-					this.locations[point].loaded = false;
+					this.locations[point] = {objects : [ response_data[i] ], loaded_content: {}};
 					marker = this.createMarker(point, response_data[i]);
 					this.objects[object_id].marker = marker;
 					this.locations[point].marker = marker;
@@ -853,6 +1202,9 @@ GeoMashup = {
 		// provider override (maybe jQuery?)
 	},
 
+	/**
+	 * Hide all markers.
+	 */
 	hideMarkers : function() {
 		var point;
 
@@ -865,6 +1217,9 @@ GeoMashup = {
 		this.updateVisibleList();
 	},
 
+	/**
+ 	 * Show all markers.
+	 */
 	showMarkers : function() {
 		var i, category_id, point;
 
@@ -923,11 +1278,19 @@ GeoMashup = {
 			'</a>'].join('');
 	},
 
+	/**
+	 * Whether a marker is currently visible on the map.
+	 * @param {Marker} marker
+	 * @param {Boolean} False if the marker is hidden or outside the current viewport.
+	 */
 	isMarkerVisible : function( marker ) {
 		// Provider override
 		return false;
 	},
 
+	/**
+	 * Recompile the list of objects currently visible on the map.
+	 */
 	updateVisibleList : function() {
 		var list_element, header_element, list_html, list_count = 0;
 
@@ -941,7 +1304,7 @@ GeoMashup = {
 		if (list_element) {
 			list_html = ['<ul class="gm-visible-list">'];
 			this.forEach( this.objects, function (object_id, obj) {
-				if ( this.isMarkerVisible( obj.marker ) ) {
+				if ( this.isObjectOn( obj ) && this.isMarkerVisible( obj.marker ) ) {
 					list_html.push('<li><img src="');
 					list_html.push(obj.icon.image);
 					list_html.push('" alt="');
@@ -954,6 +1317,13 @@ GeoMashup = {
 			});
 			list_html.push('</ul>');
 			list_element.innerHTML = list_html.join('');
+			/** 
+			 * The visible posts list was updated.
+			 * @name GeoMashup#updatedVisibleList
+			 * @event
+			 * @param {GeoMashupOptions} properties Geo Mashup configuration data
+			 * @param {Number} list_count The number of items in the list
+			 */
 			this.doAction( 'updatedVisibleList', this.opts, list_count );
 		}
 	},

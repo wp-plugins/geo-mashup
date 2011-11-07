@@ -1,8 +1,6 @@
 /**
- * Google API implementation for Geo Mashup maps.
- *
- * @package GeoMashup
- * @subpackage Client
+ * Google API v2 implementation for Geo Mashup maps.
+ * @fileOverview
  */
 
 /*global GeoMashup */
@@ -25,24 +23,37 @@ GeoMashup.createCategoryLine = function ( category ) {
 GeoMashup.openMarkerInfoWindow = function( marker, content_node, window_opts ) {
 	var latlng = marker.getLatLng();
 	this.doAction( 'markerInfoWindowOptions', this.opts, this.locations[latlng], window_opts );
-	this.locations[latlng].info_window_options = window_opts;
-	this.locations[latlng].loaded = true;
 	marker.openInfoWindow( content_node, window_opts );
 };
 
-GeoMashup.loadMaxContent = function( marker, regular_node, info_window_max_url ) {
+GeoMashup.loadMaxContent = function( marker, regular_node, info_window_max_url, cache ) {
 	var info_window_max_request = new google.maps.XmlHttp.create();
 	var request_options = {url: info_window_max_url};
+	/** 
+	 * A marker's maximized info window content is being requested.
+	 * @name GeoMashup#markerInfoWindowMaxRequest
+	 * @event
+	 * @param {Marker} marker
+	 * @param {AjaxRequestOptions} request_options 
+	 */
 	this.doAction( 'markerInfoWindowMaxRequest', marker, request_options );
 	info_window_max_request.open( 'GET', request_options.url, true );
 	info_window_max_request.onreadystatechange = function() {
 		var max_node, max_options, filter;
 		if (info_window_max_request.readyState === 4 && info_window_max_request.status === 200 ) {
 			filter = {content: info_window_max_request.responseText};
+			/**
+			 * A marker's maximized info window content is being loaded.
+			 * @name GeoMashup#markerInfoWindowMaxLoad
+			 * @event
+			 * @param {Marker} marker
+			 * @param {ContentFilter} filter 
+			 */
 			GeoMashup.doAction( 'markerInfoWindowMaxLoad', marker, filter );
 			max_node = document.createElement( 'div' );
 			max_node.innerHTML = filter.content;
 			GeoMashup.parentizeLinks( max_node );
+			cache.info_window_options = {maxContent: max_node};
 			GeoMashup.openMarkerInfoWindow( marker, regular_node, {maxContent : max_node} );
 		} // end max readState === 4
 	}; // end max onreadystatechange function
@@ -50,26 +61,22 @@ GeoMashup.loadMaxContent = function( marker, regular_node, info_window_max_url )
 };
 
 GeoMashup.openInfoWindow = function( marker ) {
-	var object_ids, i, request_options, info_window_request, object_element, point = marker.getPoint();
+	var object_ids, cache_key, cache, i, request_options, info_window_request, object_element, point = marker.getPoint();
 
 	this.map.closeInfoWindow();
 		
-	if (this.locations[point].loaded) {
-		marker.openInfoWindow( this.locations[point].info_node, this.locations[point].info_window_options );
+	object_ids = this.getOnObjectIDs( this.getMarkerObjects( marker ) );
+	cache_key = 'info-window-' + object_ids.join(',');
+	cache = this.locationCache( point, cache_key );
+	if ( cache.info_node ) {
+		marker.openInfoWindow( cache.info_node, cache.info_window_options );
 	} else {
 		marker.openInfoWindowHtml('<div align="center"><img src="' +
 			this.opts.url_path + 
 			'/images/busy_icon.gif" alt="Loading..." /></div>');
-		object_ids = '';
-		for(i=0; i<this.locations[point].objects.length; i += 1) {
-			if (i>0) {
-				object_ids += ',';
-			}
-			object_ids += this.locations[point].objects[i].object_id;
-		}
 		request_options = {
 			url: this.geo_query_url + '&object_name=' + this.opts.object_name +
-				'&object_ids=' + object_ids
+				'&object_ids=' + object_ids.join( ',' )
 		};
 		this.doAction( 'markerInfoWindowRequest', marker, request_options );
 		info_window_request = new google.maps.XmlHttp.create();
@@ -83,10 +90,11 @@ GeoMashup.openInfoWindow = function( marker ) {
 				node = document.createElement('div');
 				node.innerHTML = filter.content;
 				GeoMashup.parentizeLinks( node );
-				GeoMashup.locations[point].info_node = node;
+				cache.info_node = node;
 				if ( 'post' == GeoMashup.opts.object_name ) {
-					GeoMashup.loadMaxContent( marker, node, request_options.url + '&template=info-window-max' );
+					GeoMashup.loadMaxContent( marker, node, request_options.url + '&template=info-window-max', cache );
 				} else {
+					cache.info_window_options = {};
 					GeoMashup.openMarkerInfoWindow( marker, node, {} );
 					GeoMashup.doAction( 'loadedInfoWindow' );
 				}
@@ -134,7 +142,7 @@ GeoMashup.showMarkerAttachments = function( marker ) {
 	this.hideAttachments();
 	objects = this.getObjectsAtLocation( marker.getLatLng() );
 	this.forEach( objects, function( i, obj ) {
-		var ajax_params = { action: 'geo_mashup_kml_attachments' };
+		var ajax_params = {action: 'geo_mashup_kml_attachments'};
 		if ( obj.attachments ) {
 			// Attachment overlays are available
 			this.forEach( obj.attachments, function( j, attachment ) {
@@ -158,33 +166,35 @@ GeoMashup.showMarkerAttachments = function( marker ) {
 };
 
 GeoMashup.loadFullPost = function( point ) {
-	var i, url, post_request, object_ids, objects, request_options;
+	var i, url, cache, post_request, object_ids, request_options;
 
-	this.getShowPostElement().innerHTML = '<div align="center"><img src="' +
-		this.opts.url_path + '/images/busy_icon.gif" alt="Loading..." /></div>';
-	objects = this.getObjectsAtLocation( point );
-	object_ids = [];
-	for( i = 0; i < objects.length; i += 1) {
-		object_ids.push( objects[i].object_id );
+	object_ids = this.getOnObjectIDs( this.getObjectsAtLocation( point ) );
+	cache = this.locationCache( point, 'full-post-' + object_ids.join(',') );
+	if ( cache.post_html ) {
+		this.getShowPostElement().innerHTML = cache.post_html;
+	} else {
+
+		this.getShowPostElement().innerHTML = '<div align="center"><img src="' +
+			this.opts.url_path + '/images/busy_icon.gif" alt="Loading..." /></div>';
+		request_options = {
+			url: this.geo_query_url + '&object_name=' + this.opts.object_name +
+				'&object_ids=' + object_ids.join( ',' ) + '&template=full-post'
+		};
+		this.doAction( 'fullPostRequest', objects, request_options );
+		post_request = new google.maps.XmlHttp.create();
+		post_request.open('GET', request_options.url, true);
+		post_request.onreadystatechange = function() {
+			var filter;
+			if (post_request.readyState === 4 && post_request.status === 200) {
+				filter = {content: post_request.responseText};
+				GeoMashup.doAction( 'fullPostLoad', objects, filter );
+				GeoMashup.getShowPostElement().innerHTML = filter.content;
+				GeoMashup.doAction( 'fullPostChanged' );
+				cache.post_html = filter.content;
+			} // end readystate === 4
+		}; // end onreadystatechange function
+		post_request.send(null);
 	}
-	request_options = {
-		url: this.geo_query_url + '&object_name=' + this.opts.object_name +
-			'&object_ids=' + object_ids.join( ',' ) + '&template=full-post'
-	};
-	this.doAction( 'fullPostRequest', objects, request_options );
-	post_request = new google.maps.XmlHttp.create();
-	post_request.open('GET', request_options.url, true);
-	post_request.onreadystatechange = function() {
-		var filter;
-		if (post_request.readyState === 4 && post_request.status === 200) {
-			filter = { content: post_request.responseText };
-			GeoMashup.doAction( 'fullPostLoad', objects, filter );
-			GeoMashup.getShowPostElement().innerHTML = filter.content;
-			GeoMashup.doAction( 'fullPostChanged' );
-			GeoMashup.locations[point].post_html = filter.content;
-		} // end readystate === 4
-	}; // end onreadystatechange function
-	post_request.send(null);
 };
 
 GeoMashup.addObjectIcon = function( obj ) {
@@ -212,7 +222,7 @@ GeoMashup.createMarker = function( point, obj ) {
 	if ( !obj.icon ) {
 		this.addObjectIcon( obj );
 	}
-	marker_opts.icon = obj.icon;
+	marker_opts.icon = this.clone( obj.icon );
 	this.doAction( 'objectMarkerOptions', this.opts, marker_opts, obj );
 	marker = new google.maps.Marker(point,marker_opts);
 
@@ -319,11 +329,21 @@ GeoMashup.makeMarkerMultiple = function( marker ) {
 	if (!plus_image) {
 		plus_image = this.opts.url_path + '/images/mm_20_plus.png';
 	}
-	marker.setImage( plus_image );
-	// marker.setImage doesn't survive clustering - still true?
-	marker.getIcon().image = plus_image;
+	if ( marker.getIcon().image !== plus_image ) {
+		// User testing gave best results when both methods of
+		// changing the marker image are used in this order
+		marker.setImage( plus_image );
+		marker.getIcon().image = plus_image;
+	}
 	this.doAction( 'multiObjectMarker', this.opts, marker );
 	this.doAction( 'multiObjectIcon', this.opts, marker.getIcon() );
+};
+
+GeoMashup.setMarkerImage = function( marker, image_url ) {
+	if ( marker.getIcon().image !== image_url ) {
+		marker.setImage( image_url );
+		marker.getIcon().image = image_url;
+	}
 };
 
 GeoMashup.setCenterUpToMaxZoom = function( latlng, zoom, callback ) {
@@ -524,6 +544,14 @@ GeoMashup.createMap = function(container, opts) {
 				'clusterMarkerTitle' : '%count',
 				'intersectPadding' : 3	
 			};
+			/**
+			 * Clusterer options are being set.
+			 * @name GeoMashup#clusterOptions
+			 * @event
+			 * @param {GeoMashupOptions} properties Geo Mashup configuration data
+			 * @param {Object} clusterer_opts Modifiable clusterer options for 
+			 *   <a href="http://googlemapsapi.martinpearman.co.uk/readarticle.php?article_id=4">ClusterMarker</a>.
+			 */
 			this.doAction( 'clusterOptions', this.opts, clusterer_opts );
 			this.clusterer = new ClusterMarker( this.map, clusterer_opts );
 		} else {
@@ -581,7 +609,7 @@ GeoMashup.createMap = function(container, opts) {
 
 	if (opts.map_content === 'single')
 	{
-		if (opts.center_lat && opts.center_lng && !this.kml)
+		if (opts.object_data && opts.object_data.objects.length && !this.kml)
 		{
 			marker_opts = {};
 			if (typeof customGeoMashupSinglePostIcon === 'function') {
@@ -592,7 +620,7 @@ GeoMashup.createMap = function(container, opts) {
 			}
 			this.doAction( 'singleMarkerOptions', this.opts, marker_opts );
 			single_marker = new google.maps.Marker(
-				new google.maps.LatLng( this.opts.center_lat, this.opts.center_lng ), marker_opts );
+				new google.maps.LatLng( opts.object_data.objects[0].lat, opts.object_data.objects[0].lng ), marker_opts );
 			this.map.addOverlay( single_marker );
 			this.doAction( 'singleMarker', this.opts, single_marker );
 		}

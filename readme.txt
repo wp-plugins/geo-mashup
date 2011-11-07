@@ -3,9 +3,9 @@ Contributors: cyberhobo
 Donate Link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=11045324
 Tags: map, maps, google maps, google map, mapping, mashup, geo, google, geocms
 Requires at least: 2.8
-Tested up to: 3.2
-Stable tag: 1.4
-  
+Tested up to: 3.2.1
+Stable tag: 1.4.2
+ 
 Include Google maps in posts and pages, and map posts, pages, and other objects on global maps. Make WordPress into a GeoCMS.
 
 == Description ==
@@ -62,6 +62,7 @@ and there is a public [Google Group](http://groups.google.com/group/wordpress-ge
 
 = Translations =
 
+* Portugese by [Antonio Xeira](http://flyingsouth.thehappytoadfish.com/) added in version 1.4.2
 * Italian by [Federico](http://thrifytuscany.com/) added in version 1.3.10
 * Dutch by Kurt Stockman of [eten in Gent](http://www.eteningent.be/) added in version 1.3.9
 * French updated in version 1.3.7
@@ -98,6 +99,12 @@ if you've added or changed things in the Geo Mashup plugin folder, please look a
 for the best way to keep your custom files safe moving forward.
 
 == Change Log ==
+
+= 1.4.2 =
+[milestone 1.4.2 changes](http://code.google.com/p/wordpress-geo-mashup/issues/list?can=1&q=Milestone%3D1.4.2)
+
+= 1.4.1 =
+[milestone 1.4.1 changes](http://code.google.com/p/wordpress-geo-mashup/issues/list?can=1&q=Milestone%3D1.4.1)
 
 = 1.4 =
 [milestone 1.4 changes](http://code.google.com/p/wordpress-geo-mashup/issues/list?can=1&q=Milestone%3D1.4)

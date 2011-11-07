@@ -52,7 +52,7 @@ class GeoMashupOptions {
 			'add_map_type_control' => array(),
 			'add_overview_control' => 'false',
 			'add_google_bar' => 'false',
-			'enable_scroll_wheel_zoom' => 'false',
+			'enable_scroll_wheel_zoom' => 'true',
 			'show_post' => 'false',
 			'show_future' => 'false',
 			'marker_select_info_window' => 'true',
@@ -75,7 +75,7 @@ class GeoMashupOptions {
 			'add_overview_control' => 'false',
 			'add_map_type_control' => array(),
 			'add_google_bar' => 'false',
-			'enable_scroll_wheel_zoom' => 'false',
+			'enable_scroll_wheel_zoom' => 'true',
 			'click_to_load' => 'false',
 	 		'click_to_load_text' => '' ), 
 		'context_map' => array (
@@ -88,7 +88,7 @@ class GeoMashupOptions {
 			'add_overview_control' => 'false',
 			'add_map_type_control' => array(),
 			'add_google_bar' => 'false',
-			'enable_scroll_wheel_zoom' => 'false',
+			'enable_scroll_wheel_zoom' => 'true',
 			'marker_select_info_window' => 'true',
 			'marker_select_highlight' => 'false',
 			'marker_select_center' => 'false',
@@ -409,7 +409,7 @@ class GeoMashupOptions {
 			case 'adsense_code':
 				if ( empty( $value ) )
 					$value = 'partner-pub-5088093001880917';
-			case 'geonames_user':
+			case 'geonames_username':
 				if ( empty( $value ) )
 					$value = 'geomashup';
 			case 'category_link_separator':
