@@ -132,6 +132,7 @@ class GeoMashupRenderMap {
 	 * Render the requested map.
 	 *
 	 * @since 1.4
+	 * @uses do_action() geo_mashup_render_map Customize things (like scripts and styles) before the template is loaded. The mashup script (google v2 or mxn) is sent as a parameter.
 	 */
 	public static function render_map() {
 		global $geo_mashup_options, $geo_mashup_custom;
@@ -391,6 +392,9 @@ class GeoMashupRenderMap {
 
 		// Store the properties for use by the template tag GeoMashupRenderMap::map_script
 		self::$map_data = $map_data;
+
+		// A general hook for rendering customizations
+		do_action( 'geo_mashup_render_map', $mashup_script );
 
 		// Load the template
 		status_header ( 200 );

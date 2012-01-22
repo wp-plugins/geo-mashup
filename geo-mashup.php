@@ -3,7 +3,7 @@
 Plugin Name: Geo Mashup
 Plugin URI: http://code.google.com/p/wordpress-geo-mashup/ 
 Description: Save location for posts and pages, or even users and comments. Display these locations on Google maps. Make WordPress into your GeoCMS.
-Version: 1.4.5
+Version: 1.4.6
 Author: Dylan Kuhn
 Author URI: http://www.cyberhobo.net/
 Minimum WordPress Version Required: 3.0
@@ -115,6 +115,7 @@ class GeoMashup {
 		global $geo_mashup_options;
 
 		add_action( 'init', array( __CLASS__, 'init' ) );
+		add_action( 'wp_scheduled_delete', array( __CLASS__, 'action_wp_scheduled_delete' ) );
 
 		add_action( 'plugins_loaded', array( __CLASS__, 'dependent_init' ), -1 );
 		add_action( 'wp_ajax_geo_mashup_query', array( __CLASS__, 'geo_query') );
@@ -184,7 +185,7 @@ class GeoMashup {
 		define('GEO_MASHUP_URL_PATH', trim( plugin_dir_url( __FILE__ ), '/' ) );
 		define('GEO_MASHUP_MAX_ZOOM', 20);
 		// Make numeric versions: -.02 for alpha, -.01 for beta
-		define('GEO_MASHUP_VERSION', '1.4.5');
+		define('GEO_MASHUP_VERSION', '1.4.6');
 		define('GEO_MASHUP_DB_VERSION', '1.3');
 	}
 
@@ -241,6 +242,29 @@ class GeoMashup {
 	 */
 	public static function dependent_init() {
 		do_action( 'geo_mashup_init' );
+	}
+
+	/**
+	 * WordPress action to remove expired Geo Mashup transients.
+	 * 
+	 * @since 1.4.6
+	 * @uses apply_filter() geo_mashup_disable_scheduled_delete A way to disable the scheduled delete.
+	 */
+	public static function action_wp_scheduled_delete() {
+		global $wpdb, $_wp_using_ext_object_cache;
+
+		
+		if ( $_wp_using_ext_object_cache || apply_filters( 'geo_mashup_disable_scheduled_delete', false ) || defined( 'GEO_MASHUP_DISABLE_SCHEDULED_DELETE' ) )
+			return;
+
+		$time = time();
+		$expired = $wpdb->get_col( "SELECT option_name FROM {$wpdb->options} WHERE option_name LIKE '_transient_timeout_gm%' AND option_value < {$time};" );
+
+		foreach( $expired as $transient ) {
+			$key = str_replace('_transient_timeout_', '', $transient);
+			delete_transient($key);
+		}
+		$wpdb->query( "OPTIMIZE TABLE {$wpdb->options}" );
 	}
 
 	/**
@@ -963,7 +987,9 @@ class GeoMashup {
 		set_transient( 'gmm' . $atts_md5, $map_data, 20 );
 		set_transient( 'gmp' . $atts_md5, $atts, 60*60*24 );
 
-		$iframe_src =  home_url( '?geo_mashup_content=render-map&amp;map_data_key=' . $atts_md5 );
+		// Sending no path to home_url() provides compatbility with WPML, which may change the domain this way
+		$iframe_src =  path_join( home_url(), '?geo_mashup_content=render-map&amp;map_data_key=' . $atts_md5 );
+
 		if ( !empty( $atts['lang'] ) )
 			$iframe_src .= '&amp;lang=' . $atts['lang'];
 			
