@@ -3,7 +3,7 @@
 Plugin Name: Geo Mashup
 Plugin URI: http://code.google.com/p/wordpress-geo-mashup/ 
 Description: Save location for posts and pages, or even users and comments. Display these locations on Google maps. Make WordPress into your GeoCMS.
-Version: 1.4.7
+Version: 1.4.8
 Author: Dylan Kuhn
 Author URI: http://www.cyberhobo.net/
 Minimum WordPress Version Required: 3.0
@@ -185,7 +185,7 @@ class GeoMashup {
 		define('GEO_MASHUP_URL_PATH', trim( plugin_dir_url( __FILE__ ), '/' ) );
 		define('GEO_MASHUP_MAX_ZOOM', 20);
 		// Make numeric versions: -.02 for alpha, -.01 for beta
-		define('GEO_MASHUP_VERSION', '1.4.7');
+		define('GEO_MASHUP_VERSION', '1.4.8');
 		define('GEO_MASHUP_DB_VERSION', '1.3');
 	}
 
@@ -827,9 +827,8 @@ class GeoMashup {
 	 */
 	public static function map( $atts = null ) {
 		global $wp_query, $in_comment_loop, $geo_mashup_options;
-		static $map_number = 0;
+		static $map_number = 1;
 
-		$map_number++;
 		$atts = wp_parse_args( $atts );
 		$static = (bool)( !empty( $atts['static'] ) and 'true' == $atts['static'] );
 		unset( $atts['static'] );
@@ -930,11 +929,18 @@ class GeoMashup {
 					return '<!-- ' . __( 'Geo Mashup map omitted to avoid nesting maps', 'GeoMashup' ) . '-->';
 				}
 				$atts['map_content'] = 'global';
-				if ( isset($_SERVER['QUERY_STRING']) and 1 == $map_number ) {
-					// The first global map on a page will make use of query string arguments
+
+				// Global maps on a page will make use of query string arguments unless directed otherwise
+				$ignore_url = false;
+				if ( isset( $atts['ignore_url'] ) && 'true' == $atts['ignore_url'] ) {
+					$ignore_url = true;
+					unset( $atts['ignore_url'] );
+				}
+				if ( isset($_SERVER['QUERY_STRING']) and !$ignore_url ) 
 					$atts = wp_parse_args( $_SERVER['QUERY_STRING'], $atts );
-				} 
+
 				$atts += $geo_mashup_options->get( 'global_map', $click_to_load_options );
+
 				// Don't query more than max_posts
 				$max_posts = $geo_mashup_options->get( 'global', 'max_posts' );
 				if ( empty( $atts['limit'] ) and !empty( $max_posts ) )
@@ -1019,6 +1025,7 @@ class GeoMashup {
 				"height=\"{$map_data['height']}\" width=\"{$map_data['width']}\" marginheight=\"0\" marginwidth=\"0\" ".
 				"scrolling=\"no\" frameborder=\"0\"></iframe></div>";
 		}
+		$map_number++;
 		return $content;
 	}
 
