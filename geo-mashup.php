@@ -3,7 +3,7 @@
 Plugin Name: Geo Mashup
 Plugin URI: http://code.google.com/p/wordpress-geo-mashup/ 
 Description: Save location for posts and pages, or even users and comments. Display these locations on Google maps. Make WordPress into your GeoCMS.
-Version: 1.4.8
+Version: 1.4.9
 Author: Dylan Kuhn
 Author URI: http://www.cyberhobo.net/
 Minimum WordPress Version Required: 3.0
@@ -101,9 +101,6 @@ class GeoMashup {
 		include_once( GEO_MASHUP_DIR_PATH . '/geo-mashup-options.php' );
 		include_once( GEO_MASHUP_DIR_PATH . '/geo-mashup-db.php' );
 		include_once( GEO_MASHUP_DIR_PATH . '/geo-mashup-ui-managers.php' );
-	if ( !is_admin() ) {
-			include_once( GEO_MASHUP_DIR_PATH . '/shortcodes.php');
-		}
 	}
 
 	/**
@@ -170,6 +167,8 @@ class GeoMashup {
 			add_filter( 'query_vars', array( __CLASS__, 'query_vars' ) );
 			add_action( 'template_redirect', array( __CLASS__, 'template_redirect' ) );
 
+			include_once( GEO_MASHUP_DIR_PATH . '/shortcodes.php');
+	
 		}
 	}
 
@@ -185,7 +184,7 @@ class GeoMashup {
 		define('GEO_MASHUP_URL_PATH', trim( plugin_dir_url( __FILE__ ), '/' ) );
 		define('GEO_MASHUP_MAX_ZOOM', 20);
 		// Make numeric versions: -.02 for alpha, -.01 for beta
-		define('GEO_MASHUP_VERSION', '1.4.8');
+		define('GEO_MASHUP_VERSION', '1.4.9');
 		define('GEO_MASHUP_DB_VERSION', '1.3');
 	}
 
@@ -577,7 +576,7 @@ class GeoMashup {
 		}
 		$args = array(
 			'post_type' => 'attachment',
-			'numberposts' => null,
+			'numberposts' => -1,
 			'post_status' => null,
 			'post_mime_type' => array(
 				'application/vnd.google-earth.kml+xml',
