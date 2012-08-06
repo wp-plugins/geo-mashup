@@ -3,7 +3,7 @@
 Plugin Name: Geo Mashup
 Plugin URI: http://code.google.com/p/wordpress-geo-mashup/ 
 Description: Save location for posts and pages, or even users and comments. Display these locations on Google maps. Make WordPress into your GeoCMS.
-Version: 1.4.9
+Version: 1.4.10
 Author: Dylan Kuhn
 Author URI: http://www.cyberhobo.net/
 Minimum WordPress Version Required: 3.0
@@ -184,7 +184,7 @@ class GeoMashup {
 		define('GEO_MASHUP_URL_PATH', trim( plugin_dir_url( __FILE__ ), '/' ) );
 		define('GEO_MASHUP_MAX_ZOOM', 20);
 		// Make numeric versions: -.02 for alpha, -.01 for beta
-		define('GEO_MASHUP_VERSION', '1.4.9');
+		define('GEO_MASHUP_VERSION', '1.4.10');
 		define('GEO_MASHUP_DB_VERSION', '1.3');
 	}
 
@@ -812,6 +812,37 @@ class GeoMashup {
 	}
 
 	/**
+	 * Make an URL with querystring added to the site's home URL.
+	 *
+	 * @since 1.4
+	 *
+	 * @static
+	 * @param array $query Associative array of querystring parameters.
+	 * @return string HTML-ready URL.
+	 */
+	public static function build_home_url( $query = array() ) {
+
+		// Sending no path to home_url() provides compatbility with WPML, which may change the domain this way
+		$home_url_parts = parse_url( home_url() );
+
+		// Language plugins may also add query parameters to home_url(). We'll add to these.
+		$home_url_query_parts = array();
+		if ( !empty( $home_url_parts['query'] ) ) {
+			$home_url_query_parts = array();
+			wp_parse_str( $home_url_parts['query'], $home_url_query_parts );
+			$query = array_merge( $home_url_query_parts, $query );
+		}
+
+		$home_url = $home_url_parts['scheme'] . '://' . $home_url_parts['host'];
+		if ( !empty( $home_url_parts['path'] ) )
+			$home_url .= $home_url_parts['path'];
+		if ( !empty( $query ) )
+			$home_url .=  '?' . htmlspecialchars( http_build_query( $query ) );
+
+		return $home_url;
+	}
+
+	/**
 	 * The map template tag.
 	 *
 	 * Returns HTML for a Google map. Must use with echo in a template: echo GeoMashup::map();.
@@ -992,12 +1023,16 @@ class GeoMashup {
 		set_transient( 'gmm' . $atts_md5, $map_data, 20 );
 		set_transient( 'gmp' . $atts_md5, $atts, 60*60*24 );
 
-		// Sending no path to home_url() provides compatbility with WPML, which may change the domain this way
-		$iframe_src =  path_join( home_url(), '?geo_mashup_content=render-map&amp;map_data_key=' . $atts_md5 );
+		$src_args = array(
+			'geo_mashup_content' => 'render-map',
+			'map_data_key' => $atts_md5,
+		);
 
 		if ( !empty( $atts['lang'] ) )
-			$iframe_src .= '&amp;lang=' . $atts['lang'];
-			
+			$src_args['lang'] = $atts['lang'];
+
+		$iframe_src = self::build_home_url( $src_args );
+
 		$content = "";
 
 		if ($click_to_load == 'true') {
