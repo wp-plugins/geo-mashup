@@ -3,7 +3,7 @@
 Plugin Name: Geo Mashup
 Plugin URI: http://code.google.com/p/wordpress-geo-mashup/ 
 Description: Save location for posts and pages, or even users and comments. Display these locations on Google and OSM maps. Make WordPress into your GeoCMS.
-Version: 1.5.1
+Version: 1.5.2
 Author: Dylan Kuhn
 Author URI: http://www.cyberhobo.net/
 Minimum WordPress Version Required: 3.0
@@ -201,7 +201,7 @@ class GeoMashup {
 		define('GEO_MASHUP_URL_PATH', trim( plugin_dir_url( __FILE__ ), '/' ) );
 		define('GEO_MASHUP_MAX_ZOOM', 20);
 		// Make numeric versions: -.02 for alpha, -.01 for beta
-		define('GEO_MASHUP_VERSION', '1.5.1');
+		define('GEO_MASHUP_VERSION', '1.5.2');
 		define('GEO_MASHUP_DB_VERSION', '1.3');
 	}
 
@@ -744,11 +744,12 @@ class GeoMashup {
 	/**
 	 * Augment an object location for display.
 	 *
+	 * Adds term data, object type, author, and label.
 	 * @since 1.5
 	 *
 	 * @param string $object_name The object type, e.g. 'post', 'user', etc.
-	 * @param array $object_location The object location data.
-	 * @return array The 
+	 * @param object $object_location The object location data.
+	 * @return array The augmented object location data.
 	 */
 	private static function augment_map_object_location( $object_name, $object_location ) {
 		global $geo_mashup_options;
@@ -767,9 +768,15 @@ class GeoMashup {
 				$include_taxonomies = $geo_mashup_options->get( 'overall', 'include_taxonomies' );
 			
 			foreach( $include_taxonomies as $include_taxonomy ) {
+				$term_ids_by_taxonomy[$include_taxonomy] = array();
 				// Not using wp_get_object_terms(), which doesn't allow for persistent caching
 				$tax_terms = get_the_terms( $object_location->object_id, $include_taxonomy );
-				$term_ids_by_taxonomy[$include_taxonomy] = empty( $tax_terms ) ? array() : wp_list_pluck( $tax_terms, 'term_id' );
+				if ( $tax_terms ) {
+					// terms are sometimes indexed in order, sometimes by id, so wp_list_pluck() doesn't work
+					foreach ( $tax_terms as $term ) {
+						$term_ids_by_taxonomy[$include_taxonomy][] = $term->term_id;
+					}
+				}
 			}
 
 			// Add post author name
