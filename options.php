@@ -53,7 +53,19 @@ function geo_mashup_options_page() {
 		echo '<div class="updated fade">' . $log . '</div>';
 	}
 
+
 	if ( isset( $_POST['geo_mashup_run_tests'] ) ) {
+		if ( !function_exists( 'mb_check_encoding' ) ) {
+			echo '<div class="updated fade">';
+			printf(
+				__( '%s Multibyte string functions %s are not installed.', 'GeoMashup' ),
+				'<a href="http://www.php.net/manual/en/mbstring.installation.php" title="">',
+				'</a>'
+			);
+			echo ' ';
+			_e( 'Geocoding and other web services may not work properly.', 'GeoMashup' );
+			echo '</div>';
+		}
 		$test_transient = get_transient( 'geo_mashup_test' );
 		if ( !$test_transient ) {
 			echo '<div class="updated fade">';
@@ -84,7 +96,7 @@ function geo_mashup_options_page() {
 
 	if ( !empty ( $geo_mashup_options->corrupt_options ) ) {
 		// Options didn't load correctly
-		$message .= ' ' . __('Saved options may be corrupted, try updating again. Corrupt values: ') . 
+		$message = ' ' . __('Saved options may be corrupted, try updating again. Corrupt values: ') .
 			'<code>' . $geo_mashup_options->corrupt_options . '</code>';
 		echo '<div class="updated"><p>'.$message.'</p></div>';
 	}
@@ -150,15 +162,11 @@ function geo_mashup_options_page() {
 		$zoomOptions[$i] = $i;
 	}
 
-	$clusterOptions = Array( 
-		'clustermarker' => __( 'Cluster Marker', 'GeoMashup' ),
-		'markerclusterer' => __( 'Marker Clusterer', 'GeoMashup' )
-	);
-
-	$selected_tab = ( empty( $_POST['geo_mashup_selected_tab'] ) ) ? 0 : $_POST['geo_mashup_selected_tab']; 
+	$selected_tab = ( empty( $_POST['geo_mashup_selected_tab'] ) ) ? 0 : $_POST['geo_mashup_selected_tab'];
 	$google_key = $geo_mashup_options->get( 'overall', 'google_key' );
-	$map_api = $geo_mashup_options->get( 'overall', 'map_api' );
 	$include_taxonomies = $geo_mashup_options->get( 'overall', 'include_taxonomies' );
+	$map_api = $geo_mashup_options->get( 'overall', 'map_api' );
+
 	// Now for the HTML
 ?>
 	<script type="text/javascript"> 
@@ -166,9 +174,9 @@ function geo_mashup_options_page() {
 		var selector = '#geo-mashup-settings-form',
 			$obscure_settings = $('.obscure').hide();
 		$( selector ).tabs( {
-			selected: <?php echo $selected_tab ?>,
-			select: function ( event, ui ) {
-				$( '#geo-mashup-selected-tab' ).val( ui.index );
+			active: <?php echo $selected_tab ?>,
+			activate: function ( event, ui ) {
+				$( '#geo-mashup-selected-tab' ).val( ui.newTab.index() );
 			}
 		} );
 		$( '#import_custom_field' ).suggest( ajaxurl + '?action=geo_mashup_suggest_custom_keys', {
@@ -506,7 +514,9 @@ function geo_mashup_options_page() {
 						</td>
 					</tr>
 				</table>
-				<div class="submit"><input id="overall-submit" type="submit" name="submit" value="<?php _e('Update Options', 'GeoMashup'); ?>" /></div>
+				<div class="submit">
+					<input id="overall-submit" class="button button-primary" type="submit" name="submit" value="<?php _e('Update Options', 'GeoMashup'); ?>" />
+				</div>
 			</fieldset>
 			<fieldset id="geo-mashup-single-map-settings">
 				<p><?php _e('Default settings for maps of a single located post.', 'GeoMashup'); ?></p>
@@ -758,12 +768,11 @@ function geo_mashup_options_page() {
 							?></span>
 						</td>
 					</tr>
-					<?php if ( 'google' == $map_api ) : ?>
+					<?php if ( 'google' == substr( $map_api, 0, 6 ) ) : ?>
 					<tr>
 						<th scope="row"><?php _e('Cluster Markers Until Zoom Level', 'GeoMashup'); ?></th>
 						<td>
-							<input id="cluster_library" name="global_map[cluster_lib]" type="hidden" value="clustermarker" />
-							<input id="cluster_max_zoom" 
+							<input id="cluster_max_zoom"
 								name="global_map[cluster_max_zoom]" 
 								type="text" 
 								size="2" 

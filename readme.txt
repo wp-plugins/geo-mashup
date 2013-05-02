@@ -2,8 +2,8 @@
 Contributors: cyberhobo
 Donate Link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=11045324
 Tags: map, maps, google maps, google map, mapping, mashup, geo, google, geocms
-Requires at least: 3.4
-Tested up to: 3.5.1
+Requires at least: 3.5
+Tested up to: 3.6-beta2
 Stable tag: 1.5.3
  
 Include Google and OpenStreetMap maps in posts and pages, and map posts, pages, and other objects on global maps. Make WordPress into a GeoCMS.
@@ -28,6 +28,7 @@ Some popular features are:
 	They can show just one category, custom taxonomy term, or custom post type, for example
 	Clicking on a post marker shows a customizable summary of the post or page in an info window
   * A Geo Search widget enables searching for content by distance from a search location
+  * Marker clustering for Google maps
   * Location can be saved for all post types (including pages) users, and comments
   * Synchronize [Geodata](http://codex.wordpress.org/Geodata) with the Geo location mobile client and other plugins
   * Support for both standard WordPress [shortcodes](http://codex.wordpress.org/Shortcode_API) and [template tags](http://codex.wordpress.org/Template_Tags/How_to_Pass_Tag_Parameters) to add maps to your site.
@@ -65,10 +66,11 @@ to the community.
 
 = Translations =
 
-* Romanian by Florin Dumitru added in version 1.5
+* German by [Thomas Morvay](http://internet-dienste.biz/) added in version 1.5.4
+* Slovak by B. Radenovich of [Web Hosting Watch](http://webhostingw.com) updated in version 1.5.4
+* Romanian by [Florin Dumitru](http://www.fitnesstimisoara.ro/) added in version 1.5
 * Irish by [Vikas Arora](http://www.apoto.com) added in version 1.4.11
 * Russian by [Tony](http://tohapro.com) added in version 1.4.10
-* Slovak by B. Radenovich of [Web Hosting Watch](http://webhostingw.com) added in version 1.4.10
 * Hindi by [Outshine Solutions](http://outshinesolutions.com) added in version 1.4.9
 * Polish by [Kamil](http://wbartoszycach.pl) added in version 1.4.7
 * Portugese by [Antonio Xeira](http://flyingsouth.thehappytoadfish.com/) added in version 1.4.2
@@ -77,7 +79,6 @@ to the community.
 * French updated in version 1.3.7
 * Spanish by [Reven](http://www.reven.org/blog/2010/03/15/traduccion-de-geo-mashup/) added in version 1.3.3
 * Swedish by [Joakim Green](http://www.joakimgreen.com/) added in version 1.3.3
-* German by [Thomas Morvay](http://internet-dienste.biz/) added in version 1.3.2
 * Belorussian by [FatCow](http://www.fatcow.com) added in version 1.2.8
 
 [Translators welcome](https://code.google.com/p/wordpress-geo-mashup/wiki/Translating).
@@ -111,6 +112,9 @@ for the best way to keep your custom files safe moving forward.
 == Change Log ==
 
 Features are generally added in one-dot releases, while two-dot releases contain fixes and small updates.
+
+= 1.6.0 May 1 2013 =
+[milestone 1.6 changes](http://code.google.com/p/wordpress-geo-mashup/issues/list?can=1&q=Milestone%3D1.6)
 
 = 1.5.3 Feb 25 2013 =
 [milestone 1.5.3 changes](http://code.google.com/p/wordpress-geo-mashup/issues/list?can=1&q=Milestone%3D1.5.3)

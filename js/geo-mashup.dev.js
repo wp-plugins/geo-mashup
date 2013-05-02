@@ -88,6 +88,12 @@ customGeoMashupSinglePostIcon, customGeoMashupMultiplePostImage;
  * </p>
  */
 GeoMashup = {
+	/**
+	 * Access to the options for this map.
+	 * Properties reflect the <a href="http://code.google.com/p/wordpress-geo-mashup/wiki/TagReference#Map">map tag parameters</a>.
+	 * @property {GeoMashupOptions}
+	 */
+	opts: {},
 	actions : {},
 	objects : {},
 	object_count : 0,
@@ -809,7 +815,7 @@ GeoMashup = {
 			this.term_manager.updateLineZoom( old_level, new_level );
 		}
 
-		if ( this.clusterer && 'clustermarker' === this.opts.cluster_lib ) {
+		if ( this.clusterer && 'google' === this.opts.map_api ) {
 			if ( old_level <= this.opts.cluster_max_zoom && 
 				new_level > this.opts.cluster_max_zoom ) {
 				this.clusterer.clusteringEnabled = false;

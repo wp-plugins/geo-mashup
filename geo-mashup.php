@@ -3,7 +3,7 @@
 Plugin Name: Geo Mashup
 Plugin URI: http://code.google.com/p/wordpress-geo-mashup/ 
 Description: Save location for posts and pages, or even users and comments. Display these locations on Google and OSM maps. Make WordPress into your GeoCMS.
-Version: 1.5.3
+Version: 1.6.0
 Author: Dylan Kuhn
 Author URI: http://www.cyberhobo.net/
 Minimum WordPress Version Required: 3.0
@@ -200,8 +200,7 @@ class GeoMashup {
 		define('GEO_MASHUP_DIRECTORY', dirname( GEO_MASHUP_PLUGIN_NAME ) );
 		define('GEO_MASHUP_URL_PATH', trim( plugin_dir_url( __FILE__ ), '/' ) );
 		define('GEO_MASHUP_MAX_ZOOM', 20);
-		// Make numeric versions: -.02 for alpha, -.01 for beta
-		define('GEO_MASHUP_VERSION', '1.5.3');
+		define('GEO_MASHUP_VERSION', '1.6.0');
 		define('GEO_MASHUP_DB_VERSION', '1.3');
 	}
 
@@ -1170,12 +1169,13 @@ class GeoMashup {
 		} else if ( $static ) {
 			$content = "<div class=\"gm-map\">$map_image</div>";
 		} else {
+			$frame_height = $map_data['height'] . ( '%' === substr( $map_data['height'], -1 ) ? '' : 'px' );
+			$frame_width = $map_data['width'] . ( '%' === substr( $map_data['width'], -1 ) ? '' : 'px' );
 			$content =  "<div class=\"gm-map\"><iframe name=\"{$map_data['name']}\" src=\"{$iframe_src}\" " .
-				"height=\"{$map_data['height']}\" width=\"{$map_data['width']}\" marginheight=\"0\" marginwidth=\"0\" ".
-				"scrolling=\"no\" frameborder=\"0\"></iframe></div>";
+				"style=\"height: $frame_height; width: $frame_width; border: none; overflow: hidden;\"></iframe></div>";
 		}
 		$map_number++;
-		return $content;
+		return apply_filters( 'geo_mashup_map_content', $content, $map_data );
 	}
 
 	/**
