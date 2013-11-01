@@ -2,9 +2,9 @@
 # This file is distributed under the same license as the Geo Mashup package.
 msgid ""
 msgstr ""
-"Project-Id-Version: Geo Mashup 1.7.1\n"
+"Project-Id-Version: Geo Mashup 1.7.2\n"
 "Report-Msgid-Bugs-To: http://wordpress.org/tag/geo-mashup\n"
-"POT-Creation-Date: 2013-10-30 00:43:40+00:00\n"
+"POT-Creation-Date: 2013-11-01 16:30:57+00:00\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -448,19 +448,19 @@ msgstr ""
 msgid "Object location not saved - invalid request."
 msgstr ""
 
-#: geo-mashup-ui-managers.php:397 geo-mashup-ui-managers.php:574
+#: geo-mashup-ui-managers.php:397 geo-mashup-ui-managers.php:591
 msgid "Location"
 msgstr ""
 
-#: geo-mashup-ui-managers.php:679
+#: geo-mashup-ui-managers.php:713
 msgid "Address not found - try making it less detailed"
 msgstr ""
 
-#: geo-mashup-ui-managers.php:863
+#: geo-mashup-ui-managers.php:897
 msgid "Written from (location)"
 msgstr ""
 
-#: geo-mashup-ui-managers.php:865
+#: geo-mashup-ui-managers.php:899
 msgid "Loading..."
 msgstr ""
 
