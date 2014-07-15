@@ -1,1 +1,363 @@
-function ClusterMarker(c,a){var b;this._map=c;this._mapMarkers=[];this._iconBounds=[];this._clusterMarkers=[];this._eventListeners=[];if(typeof(a)==="undefined"){a={}}this.borderPadding=(a.borderPadding)?a.borderPadding:256;this.clusteringEnabled=(a.clusteringEnabled===false)?false:true;if(a.clusterMarkerClick){this.clusterMarkerClick=a.clusterMarkerClick}this.iconOptions={primaryColor:"#ee3333",labelSize:12,labelColor:"#000000",shape:"circle"};if(a.iconOptions){for(b in a.iconOptions){if(a.iconOptions.hasOwnProperty(b)&&typeof a.iconOptions[b]!=="function"){this.iconOptions[b]=a.iconOptions[b]}}}this.clusterMarkerIconCache=[];this.clusterMarkerTitle=(a.clusterMarkerTitle)?a.clusterMarkerTitle:"Click to zoom in and see %count markers";if(a.fitMapMaxZoom){this.fitMapMaxZoom=a.fitMapMaxZoom}this.intersectPadding=(a.intersectPadding)?a.intersectPadding:0;if(a.markers){this.addMarkers(a.markers)}GEvent.bind(this._map,"moveend",this,this._moveEnd);GEvent.bind(this._map,"zoomend",this,this._zoomEnd);GEvent.bind(this._map,"maptypechanged",this,this._mapTypeChanged)}ClusterMarker.prototype.addMarkers=function(b){var a;if(!b[0]){var c=[];for(a in b){if(b.hasOwnProperty(a)){c.push(b[a])}}b=c}for(a=b.length-1;a>=0;a--){b[a]._isVisible=true;b[a]._isActive=false;b[a]._makeVisible=false}this._mapMarkers=this._mapMarkers.concat(b)};ClusterMarker.prototype.clusterMarkerIcon=function(c){if(this.clusterMarkerIconCache[c]){return this.clusterMarkerIconCache[c]}else{var b,a=this.iconOptions;c=c.toString();if(!a.labelPadding){a.labelPadding=10}a.width=(c.length*a.labelSize)+a.labelPadding;a.label=c;b=MapIconMaker.createFlatIcon(a);this.clusterMarkerIconCache[c]=b;return b}};ClusterMarker.prototype._clusterMarker=function(b){function a(l,i,k){return new GMarker(l,{icon:i,title:k})}var h=new GLatLngBounds(),d,e,g=[],j,f=this,c=this._mapMarkers;for(d=b.length-1;d>=0;d--){j=c[b[d]];j.index=b[d];h.extend(j.getLatLng());g.push(j)}e=a(h.getCenter(),this.clusterMarkerIcon(b.length),this.clusterMarkerTitle.replace(/%count/gi,b.length));e.clusterGroupBounds=h;this._eventListeners.push(GEvent.addListener(e,"click",function(){f.clusterMarkerClick({clusterMarker:e,clusteredMarkers:g})}));e._childIndexes=b;for(d=b.length-1;d>=0;d--){c[b[d]]._parentCluster=e}return e};ClusterMarker.prototype.clusterMarkerClick=function(a){this._map.setCenter(a.clusterMarker.getLatLng(),this._map.getBoundsZoomLevel(a.clusterMarker.clusterGroupBounds))};ClusterMarker.prototype._filterActiveMapMarkers=function(){var k=this.borderPadding,j=this._map.getZoom(),q=this._map.getCurrentMapType().getProjection(),o,c,m,h,n,d,b=this._map.getBounds(),f,p,e=[],l,a=this._mapMarkers,g=this._iconBounds;if(k){o=q.fromLatLngToPixel(b.getSouthWest(),j);c=new GPoint(o.x-k,o.y+k);m=q.fromPixelToLatLng(c,j);h=q.fromLatLngToPixel(b.getNorthEast(),j);n=new GPoint(h.x+k,h.y-k);d=q.fromPixelToLatLng(n,j);b.extend(m);b.extend(d)}this._activeMarkersChanged=false;if(typeof(g[j])==="undefined"){this._iconBounds[j]=[];this._activeMarkersChanged=true;for(f=a.length-1;f>=0;f--){p=a[f];p._isActive=(b.containsLatLng(p.getLatLng())&&!p.isHidden())?true:false;p._makeVisible=p._isActive;if(p._isActive){e.push(f)}}}else{for(f=a.length-1;f>=0;f--){p=a[f];l=p._isActive;p._isActive=(b.containsLatLng(p.getLatLng())&&!p.isHidden())?true:false;p._makeVisible=p._isActive;if(!this._activeMarkersChanged&&l!==p._isActive){this._activeMarkersChanged=true}if(p._isActive&&typeof(g[j][f])==="undefined"){e.push(f)}}}return e};ClusterMarker.prototype._filterIntersectingMapMarkers=function(){var e,d,b,a=this._map.getZoom(),f=this._mapMarkers,c=this._iconBounds;for(d=f.length-1;d>0;d--){if(f[d]._makeVisible){e=[];for(b=d-1;b>=0;b--){if(f[b]._makeVisible&&c[a][d].intersects(c[a][b])){e.push(b)}}if(e.length!==0){e.push(d);for(b=e.length-1;b>=0;b--){f[e[b]]._makeVisible=false}this._clusterMarkers.push(this._clusterMarker(e))}}}};ClusterMarker.prototype.fitMapToMarkers=function(){var d=this._mapMarkers,c=new GLatLngBounds(),b;for(b=d.length-1;b>=0;b--){if(!d[b].isHidden()){c.extend(d[b].getLatLng())}}var a=this._map.getBoundsZoomLevel(c);if(this.fitMapMaxZoom&&a>this.fitMapMaxZoom){a=this.fitMapMaxZoom}this._map.setCenter(c.getCenter(),a);this.refresh()};ClusterMarker.prototype._mapTypeChanged=function(){this.refresh(true)};ClusterMarker.prototype._moveEnd=function(){if(!this._cancelMoveEnd){this.refresh()}else{this._cancelMoveEnd=false}};ClusterMarker.prototype._preCacheIconBounds=function(c,h){var n=this._map.getCurrentMapType().getProjection(),g,o,e,a,j,l,f,k,d,m=this.intersectPadding,b=this._mapMarkers;for(g=c.length-1;g>=0;g--){o=b[c[g]];e=o.getIcon().iconSize;a=n.fromLatLngToPixel(o.getLatLng(),h);j=o.getIcon().iconAnchor;l=new GPoint(a.x-j.x-m,a.y-j.y+e.height+m);f=new GPoint(a.x-j.x+e.width+m,a.y-j.y-m);k=n.fromPixelToLatLng(l,h);d=n.fromPixelToLatLng(f,h);this._iconBounds[h][c[g]]=new GLatLngBounds(k,d)}};ClusterMarker.prototype.refresh=function(d){var c,b,e=this._map.getZoom(),a=this._filterActiveMapMarkers();if(this._activeMarkersChanged||d){this._removeClusterMarkers();if(this.clusteringEnabled&&e<this._map.getCurrentMapType().getMaximumResolution()){if(a.length>0){this._preCacheIconBounds(a,e)}this._filterIntersectingMapMarkers()}for(c=this._clusterMarkers.length-1;c>=0;c--){this._map.addOverlay(this._clusterMarkers[c])}for(c=this._mapMarkers.length-1;c>=0;c--){b=this._mapMarkers[c];if(!b._isVisible&&b._makeVisible){this._map.addOverlay(b);b._isVisible=true}if(b._isVisible&&!b._makeVisible){this._map.removeOverlay(b);b._isVisible=false}}}};ClusterMarker.prototype._removeClusterMarkers=function(){var d,b,g=this._map,a=this._eventListeners,f=this._clusterMarkers,c,e=this._mapMarkers;for(d=f.length-1;d>=0;d--){c=f[d]._childIndexes;for(b=c.length-1;b>=0;b--){delete e[c[b]]._parentCluster}g.removeOverlay(f[d])}for(d=a.length-1;d>=0;d--){GEvent.removeListener(a[d])}this._clusterMarkers=[];this._eventListeners=[]};ClusterMarker.prototype.removeMarkers=function(){var a,b=this._mapMarkers,c=this._map;for(a=b.length-1;a>=0;a--){if(b[a]._isVisible){c.removeOverlay(b[a])}delete b[a]._isVisible;delete b[a]._isActive;delete b[a]._makeVisible}this._removeClusterMarkers();this._mapMarkers=[];this._iconBounds=[]};ClusterMarker.prototype.triggerClick=function(h){var k=this._mapMarkers[h];if(k._isVisible){GEvent.trigger(k,"click")}else{if(k._isActive){var f=k._parentCluster._childIndexes,b=true,c,d,g=this._map.getZoom(),j,e=this._iconBounds,a=this._map.getCurrentMapType().getMaximumResolution();while(b&&g<a){b=false;g++;if(typeof(e[g])==="undefined"){e[g]=[];this._preCacheIconBounds(f,g)}else{c=[];for(d=f.length-1;d>=0;d--){if(typeof(e[g][f[d]])==="undefined"){c.push(f[d])}}if(c.length>=1){this._preCacheIconBounds(c,g)}}for(d=f.length-1;d>=0;d--){j=f[d];if(j!==h&&e[g][j].intersects(e[g][h])){b=true;break}}}this._map.setCenter(k.getLatLng(),g);this.triggerClick(h)}else{this._map.setCenter(k.getLatLng());this.triggerClick(h)}}};ClusterMarker.prototype._zoomEnd=function(){this._cancelMoveEnd=true;this.refresh(true)};
+/*
+	ClusterMarker Version 1.3.2 modified for GMarker show()/hide() compatibility
+	
+	A marker manager for the Google Maps API
+	http://googlemapsapi.martinpearman.co.uk/clustermarker
+	
+	Copyright Martin Pearman 2009
+	Last updated 4th May 2009
+
+	This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+
+	This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+
+	You should have received a copy of the GNU General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.
+	
+*/
+
+function ClusterMarker($map, $options){
+	var $opt;
+	this._map=$map;
+	this._mapMarkers=[];
+	this._iconBounds=[];
+	this._clusterMarkers=[];
+	this._eventListeners=[];
+	if(typeof($options)==='undefined'){
+		$options={};
+	}
+	this.borderPadding=($options.borderPadding)?$options.borderPadding:256;
+	this.clusteringEnabled=($options.clusteringEnabled===false)?false:true;
+	if($options.clusterMarkerClick){
+		this.clusterMarkerClick=$options.clusterMarkerClick;
+	}
+	this.iconOptions={
+		primaryColor:"#ee3333",
+		labelSize:12,
+		labelColor:"#000000",
+		shape:"circle"
+	};
+	if ($options.iconOptions) {
+		for($opt in $options.iconOptions) {
+			if($options.iconOptions.hasOwnProperty($opt) && typeof $options.iconOptions[$opt] !== 'function') {
+				this.iconOptions[$opt] = $options.iconOptions[$opt];
+			}
+		}
+	}
+		/*
+	if($options.clusterMarkerIcon){
+		this.clusterMarkerIcon=$options.clusterMarkerIcon;
+	}else{
+		this.clusterMarkerIcon=new GIcon();
+		this.clusterMarkerIcon.image='http://maps.google.com/mapfiles/arrow.png';
+		this.clusterMarkerIcon.iconSize=new GSize(39, 34);
+		this.clusterMarkerIcon.iconAnchor=new GPoint(9, 31);
+		this.clusterMarkerIcon.infoWindowAnchor=new GPoint(9, 31);
+		this.clusterMarkerIcon.shadow='http://www.google.com/intl/en_us/mapfiles/arrowshadow.png';
+		this.clusterMarkerIcon.shadowSize=new GSize(39, 34);
+	}
+	*/
+	// create an array with which to cache all cluster marker icons as they are created
+	// avoiding repeated requests using MapIconMaker for the same marker
+	this.clusterMarkerIconCache=[];
+
+	this.clusterMarkerTitle=($options.clusterMarkerTitle)?$options.clusterMarkerTitle:'Click to zoom in and see %count markers';
+	if($options.fitMapMaxZoom){
+		this.fitMapMaxZoom=$options.fitMapMaxZoom;
+	}
+	this.intersectPadding=($options.intersectPadding)?$options.intersectPadding:0;
+	if($options.markers){
+		this.addMarkers($options.markers);
+	}
+	GEvent.bind(this._map, 'moveend', this, this._moveEnd);
+	GEvent.bind(this._map, 'zoomend', this, this._zoomEnd);
+	GEvent.bind(this._map, 'maptypechanged', this, this._mapTypeChanged);
+}
+
+ClusterMarker.prototype.addMarkers=function($markers){
+	var i;
+	if(!$markers[0]){
+		//	assume $markers is an associative array and convert to a numerically indexed array
+		var $numArray=[];
+		for(i in $markers){
+			if ( $markers.hasOwnProperty(i) ) {
+				$numArray.push($markers[i]);
+			}
+		}
+		$markers=$numArray;
+	}
+	for(i=$markers.length-1; i>=0; i--){
+		$markers[i]._isVisible=true;	//	show()/hide() compatibility code
+		$markers[i]._isActive=false;
+		$markers[i]._makeVisible=false;
+	}
+	this._mapMarkers=this._mapMarkers.concat($markers);
+};
+
+ClusterMarker.prototype.clusterMarkerIcon=function($count){
+	// a new method to return a dynamically created icon showing $count as text on the icon
+	// first check to see if the required icon has already been created
+	if(this.clusterMarkerIconCache[$count]){
+		return this.clusterMarkerIconCache[$count];
+	}else{
+		// create the required icon, cache it and return it from this method
+		var $icon, $iconOptions=this.iconOptions;
+		$count = $count.toString();
+		if ( ! $iconOptions.labelPadding ) { 
+			$iconOptions.labelPadding = 10;
+		}
+		$iconOptions.width=($count.length*$iconOptions.labelSize)+$iconOptions.labelPadding;
+		$iconOptions.label=$count;
+		$icon=MapIconMaker.createFlatIcon($iconOptions);
+		this.clusterMarkerIconCache[$count]=$icon;
+		return $icon;
+	}
+};
+
+ClusterMarker.prototype._clusterMarker=function($clusterGroupIndexes){
+	function $newClusterMarker($location, $icon, $title){
+		return new GMarker($location, {icon:$icon, title:$title});
+	}
+	var $clusterGroupBounds=new GLatLngBounds(), i, $clusterMarker, $clusteredMarkers=[], $marker, $this=this, $mapMarkers=this._mapMarkers;
+	for(i=$clusterGroupIndexes.length-1; i>=0; i--){
+		$marker=$mapMarkers[$clusterGroupIndexes[i]];
+		$marker.index=$clusterGroupIndexes[i];
+		$clusterGroupBounds.extend($marker.getLatLng());
+		$clusteredMarkers.push($marker);
+	}
+	$clusterMarker=$newClusterMarker($clusterGroupBounds.getCenter(), this.clusterMarkerIcon($clusterGroupIndexes.length), this.clusterMarkerTitle.replace(/%count/gi, $clusterGroupIndexes.length));
+	$clusterMarker.clusterGroupBounds=$clusterGroupBounds;	//	only req'd for default cluster marker click action
+	this._eventListeners.push(GEvent.addListener($clusterMarker, 'click', function(){
+		$this.clusterMarkerClick({clusterMarker:$clusterMarker, clusteredMarkers:$clusteredMarkers });
+	}));
+	$clusterMarker._childIndexes=$clusterGroupIndexes;
+	for(i=$clusterGroupIndexes.length-1; i>=0; i--){
+		$mapMarkers[$clusterGroupIndexes[i]]._parentCluster=$clusterMarker;
+	}
+	return $clusterMarker;
+};
+
+ClusterMarker.prototype.clusterMarkerClick=function($args){
+	this._map.setCenter($args.clusterMarker.getLatLng(), this._map.getBoundsZoomLevel($args.clusterMarker.clusterGroupBounds));
+};
+
+ClusterMarker.prototype._filterActiveMapMarkers=function(){
+	var $borderPadding=this.borderPadding, $mapZoomLevel=this._map.getZoom(), $mapProjection=this._map.getCurrentMapType().getProjection(), $mapPointSw, $activeAreaPointSw, $activeAreaLatLngSw, $mapPointNe, $activeAreaPointNe, $activeAreaLatLngNe, $activeAreaBounds=this._map.getBounds(), i, $marker, $uncachedIconBoundsIndexes=[], $oldState, $mapMarkers=this._mapMarkers, $iconBounds=this._iconBounds;
+	if($borderPadding){
+		$mapPointSw=$mapProjection.fromLatLngToPixel($activeAreaBounds.getSouthWest(), $mapZoomLevel);
+		$activeAreaPointSw=new GPoint($mapPointSw.x-$borderPadding, $mapPointSw.y+$borderPadding);
+		$activeAreaLatLngSw=$mapProjection.fromPixelToLatLng($activeAreaPointSw, $mapZoomLevel);
+		$mapPointNe=$mapProjection.fromLatLngToPixel($activeAreaBounds.getNorthEast(), $mapZoomLevel);
+		$activeAreaPointNe=new GPoint($mapPointNe.x+$borderPadding, $mapPointNe.y-$borderPadding);
+		$activeAreaLatLngNe=$mapProjection.fromPixelToLatLng($activeAreaPointNe, $mapZoomLevel);
+		$activeAreaBounds.extend($activeAreaLatLngSw);
+		$activeAreaBounds.extend($activeAreaLatLngNe);
+	}
+	this._activeMarkersChanged=false;
+	if(typeof($iconBounds[$mapZoomLevel])==='undefined'){
+		//	no iconBounds cached for this zoom level
+		//	no need to check for existence of individual iconBounds elements
+		this._iconBounds[$mapZoomLevel]=[];
+		this._activeMarkersChanged=true;	//	force refresh(true) as zoomed to uncached zoom level
+		for(i=$mapMarkers.length-1; i>=0; i--){
+			$marker=$mapMarkers[i];
+			$marker._isActive=($activeAreaBounds.containsLatLng($marker.getLatLng()) && !$marker.isHidden())?true:false;	//	show()/hide() compatibility code
+			$marker._makeVisible=$marker._isActive;
+			if($marker._isActive){
+				$uncachedIconBoundsIndexes.push(i);
+			}
+		}
+	}else{
+		//	icondBounds array exists for this zoom level
+		//	check for existence of individual iconBounds elements
+		for(i=$mapMarkers.length-1; i>=0; i--){
+			$marker=$mapMarkers[i];
+			$oldState=$marker._isActive;
+			$marker._isActive=($activeAreaBounds.containsLatLng($marker.getLatLng()) && !$marker.isHidden())?true:false;	//	show()/hide() compatibility code
+			$marker._makeVisible=$marker._isActive;
+			if(!this._activeMarkersChanged && $oldState!==$marker._isActive){
+				this._activeMarkersChanged=true;
+			}
+			if($marker._isActive && typeof($iconBounds[$mapZoomLevel][i])==='undefined'){
+				$uncachedIconBoundsIndexes.push(i);
+			}
+		}
+	}
+	return $uncachedIconBoundsIndexes;
+};
+
+ClusterMarker.prototype._filterIntersectingMapMarkers=function(){
+	var $clusterGroup, i, j, $mapZoomLevel=this._map.getZoom(), $mapMarkers=this._mapMarkers, $iconBounds=this._iconBounds;
+	for(i=$mapMarkers.length-1; i>0; i--)
+	{
+		if($mapMarkers[i]._makeVisible){
+			$clusterGroup=[];
+			for(j=i-1; j>=0; j--){
+				if($mapMarkers[j]._makeVisible && $iconBounds[$mapZoomLevel][i].intersects($iconBounds[$mapZoomLevel][j])){
+					$clusterGroup.push(j);
+				}
+			}
+			if($clusterGroup.length!==0){
+				$clusterGroup.push(i);
+				for(j=$clusterGroup.length-1; j>=0; j--){
+					$mapMarkers[$clusterGroup[j]]._makeVisible=false;
+				}
+				this._clusterMarkers.push(this._clusterMarker($clusterGroup));
+			}
+		}
+	}
+};
+
+ClusterMarker.prototype.fitMapToMarkers=function(){
+	var $mapMarkers=this._mapMarkers, $markersBounds=new GLatLngBounds(), i;
+	for(i=$mapMarkers.length-1; i>=0; i--){	//	show()/hide() compatibility code
+		if(!$mapMarkers[i].isHidden()){
+			$markersBounds.extend($mapMarkers[i].getLatLng());
+		}
+	}
+	var $fitMapToMarkersZoom=this._map.getBoundsZoomLevel($markersBounds);
+		
+	if(this.fitMapMaxZoom && $fitMapToMarkersZoom>this.fitMapMaxZoom){
+		$fitMapToMarkersZoom=this.fitMapMaxZoom;
+	}
+	this._map.setCenter($markersBounds.getCenter(), $fitMapToMarkersZoom);
+	this.refresh();
+};
+
+ClusterMarker.prototype._mapTypeChanged=function(){
+	this.refresh(true);
+};
+
+ClusterMarker.prototype._moveEnd=function(){
+	if(!this._cancelMoveEnd){
+		this.refresh();
+	}else{
+		this._cancelMoveEnd=false;
+	}
+};
+
+ClusterMarker.prototype._preCacheIconBounds=function($indexes, $mapZoomLevel){
+	var $mapProjection=this._map.getCurrentMapType().getProjection(), i, $marker, $iconSize, $iconAnchorPoint, $iconAnchorPointOffset, $iconBoundsPointSw, $iconBoundsPointNe, $iconBoundsLatLngSw, $iconBoundsLatLngNe, $intersectPadding=this.intersectPadding, $mapMarkers=this._mapMarkers;
+	for(i=$indexes.length-1; i>=0; i--){
+		$marker=$mapMarkers[$indexes[i]];
+		$iconSize=$marker.getIcon().iconSize;
+		$iconAnchorPoint=$mapProjection.fromLatLngToPixel($marker.getLatLng(), $mapZoomLevel);
+		$iconAnchorPointOffset=$marker.getIcon().iconAnchor;
+		$iconBoundsPointSw=new GPoint($iconAnchorPoint.x-$iconAnchorPointOffset.x-$intersectPadding, $iconAnchorPoint.y-$iconAnchorPointOffset.y+$iconSize.height+$intersectPadding);
+		$iconBoundsPointNe=new GPoint($iconAnchorPoint.x-$iconAnchorPointOffset.x+$iconSize.width+$intersectPadding, $iconAnchorPoint.y-$iconAnchorPointOffset.y-$intersectPadding);
+		$iconBoundsLatLngSw=$mapProjection.fromPixelToLatLng($iconBoundsPointSw, $mapZoomLevel);
+		$iconBoundsLatLngNe=$mapProjection.fromPixelToLatLng($iconBoundsPointNe, $mapZoomLevel);
+		this._iconBounds[$mapZoomLevel][$indexes[i]]=new GLatLngBounds($iconBoundsLatLngSw, $iconBoundsLatLngNe);
+	}
+};
+
+ClusterMarker.prototype.refresh=function($forceFullRefresh){
+	var i, $marker, $zoomLevel=this._map.getZoom(), $uncachedIconBoundsIndexes=this._filterActiveMapMarkers();
+	if(this._activeMarkersChanged || $forceFullRefresh){
+		this._removeClusterMarkers();
+		if(this.clusteringEnabled && $zoomLevel<this._map.getCurrentMapType().getMaximumResolution()){
+			if($uncachedIconBoundsIndexes.length>0){
+				this._preCacheIconBounds($uncachedIconBoundsIndexes, $zoomLevel);
+			}
+			this._filterIntersectingMapMarkers();
+		}
+		for(i=this._clusterMarkers.length-1; i>=0; i--){
+			this._map.addOverlay(this._clusterMarkers[i]);
+		}
+		for(i=this._mapMarkers.length-1; i>=0; i--){
+			$marker=this._mapMarkers[i];
+			if(!$marker._isVisible && $marker._makeVisible){
+				this._map.addOverlay($marker);
+				$marker._isVisible=true;
+			}
+			if($marker._isVisible && !$marker._makeVisible){
+				this._map.removeOverlay($marker);
+				$marker._isVisible=false;
+			}
+		}
+	}
+};
+
+ClusterMarker.prototype._removeClusterMarkers=function(){
+	var i, j, $map=this._map, $eventListeners=this._eventListeners, $clusterMarkers=this._clusterMarkers, $childIndexes, $mapMarkers=this._mapMarkers;
+	for(i=$clusterMarkers.length-1; i>=0; i--){
+		$childIndexes=$clusterMarkers[i]._childIndexes;
+		for(j=$childIndexes.length-1; j>=0; j--){
+			delete $mapMarkers[$childIndexes[j]]._parentCluster;
+		}
+		$map.removeOverlay($clusterMarkers[i]);
+	}
+	for(i=$eventListeners.length-1; i>=0; i--){
+		GEvent.removeListener($eventListeners[i]);
+	}
+	this._clusterMarkers=[];
+	this._eventListeners=[];
+};
+
+ClusterMarker.prototype.removeMarkers=function(){
+	var i, $mapMarkers=this._mapMarkers, $map=this._map;
+	for(i=$mapMarkers.length-1; i>=0; i--){
+		if($mapMarkers[i]._isVisible){
+			$map.removeOverlay($mapMarkers[i]);
+		}
+		delete $mapMarkers[i]._isVisible;
+		delete $mapMarkers[i]._isActive;
+		delete $mapMarkers[i]._makeVisible;
+	}
+	this._removeClusterMarkers();
+	this._mapMarkers=[];
+	this._iconBounds=[];
+};
+
+ClusterMarker.prototype.triggerClick=function($index){
+	var $marker=this._mapMarkers[$index];
+	if($marker._isVisible){
+		//	$marker is visible
+		GEvent.trigger($marker, 'click');
+	}
+	else if($marker._isActive){
+		//	$marker is clustered
+		var $clusteredMarkersIndexes=$marker._parentCluster._childIndexes, $intersectDetected=true, $uncachedIconBoundsIndexes, i, $mapZoomLevel=this._map.getZoom(), $clusteredMarkerIndex, $iconBounds=this._iconBounds, $mapMaxZoomLevel=this._map.getCurrentMapType().getMaximumResolution();
+		while($intersectDetected && $mapZoomLevel<$mapMaxZoomLevel){
+			$intersectDetected=false;
+			$mapZoomLevel++;
+			if(typeof($iconBounds[$mapZoomLevel])==='undefined'){
+				//	no iconBounds cached for this zoom level
+				//	no need to check for existence of individual iconBounds elements
+				$iconBounds[$mapZoomLevel]=[];
+				// need to create cache for all clustered markers at $mapZoomLevel
+				this._preCacheIconBounds($clusteredMarkersIndexes, $mapZoomLevel);
+			}else{
+				//	iconBounds array exists for this zoom level
+				//	check for existence of individual iconBounds elements
+				$uncachedIconBoundsIndexes=[];
+				for(i=$clusteredMarkersIndexes.length-1; i>=0; i--){
+					if(typeof($iconBounds[$mapZoomLevel][$clusteredMarkersIndexes[i]])==='undefined'){
+						$uncachedIconBoundsIndexes.push($clusteredMarkersIndexes[i]);
+					}
+				}
+				if($uncachedIconBoundsIndexes.length>=1){
+					this._preCacheIconBounds($uncachedIconBoundsIndexes, $mapZoomLevel);
+				}
+			}
+			for(i=$clusteredMarkersIndexes.length-1; i>=0; i--){
+				$clusteredMarkerIndex=$clusteredMarkersIndexes[i];
+				if($clusteredMarkerIndex!==$index && $iconBounds[$mapZoomLevel][$clusteredMarkerIndex].intersects($iconBounds[$mapZoomLevel][$index])){	
+					$intersectDetected=true;
+					break;
+				}
+			}
+			
+		}
+		this._map.setCenter($marker.getLatLng(), $mapZoomLevel);
+		this.triggerClick($index);
+	}else{
+		// $marker is not within active area (map bounds + border padding)
+		this._map.setCenter($marker.getLatLng());
+		this.triggerClick($index);
+	}
+};
+
+ClusterMarker.prototype._zoomEnd=function(){
+	this._cancelMoveEnd=true;
+	this.refresh(true);
+};

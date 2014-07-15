@@ -1,1 +1,227 @@
-var MapIconMaker={};MapIconMaker.createMarkerIcon=function(a){var d=a.width||32;var j=a.height||32;var e=a.primaryColor||"#ff0000";var k=a.strokeColor||"#000000";var c=a.cornerColor||"#ffffff";var g="http://chart.apis.google.com/chart?cht=mm";var b=g+"&chs="+d+"x"+j+"&chco="+c.replace("#","")+","+e.replace("#","")+","+k.replace("#","")+"&ext=.png";var h=new GIcon(G_DEFAULT_ICON);h.image=b;h.iconSize=new GSize(d,j);h.shadowSize=new GSize(Math.floor(d*1.6),j);h.iconAnchor=new GPoint(d/2,j);h.infoWindowAnchor=new GPoint(d/2,Math.floor(j/12));h.printImage=b+"&chof=gif";h.mozPrintImage=b+"&chf=bg,s,ECECD8&chof=gif";b=g+"&chs="+d+"x"+j+"&chco="+c.replace("#","")+","+e.replace("#","")+","+k.replace("#","");h.transparent=b+"&chf=a,s,ffffff11&ext=.png";h.imageMap=[d/2,j,(7/16)*d,(5/8)*j,(5/16)*d,(7/16)*j,(7/32)*d,(5/16)*j,(5/16)*d,(1/8)*j,(1/2)*d,0,(11/16)*d,(1/8)*j,(25/32)*d,(5/16)*j,(11/16)*d,(7/16)*j,(9/16)*d,(5/8)*j];for(var f=0;f<h.imageMap.length;f++){h.imageMap[f]=parseInt(h.imageMap[f],10)}return h};MapIconMaker.createFlatIcon=function(k){var n=k.width||32;var l=k.height||32;var r=k.primaryColor||"#ff0000";var m=k.shadowColor||"#000000";var i=MapIconMaker.escapeUserText_(k.label)||"";var t=k.labelColor||"#000000";var j=k.labelSize||0;var c=k.shape||"circle";var p=(c==="circle")?"it":"itr";var b="http://chart.apis.google.com/chart?cht="+p;var h=b+"&chs="+n+"x"+l+"&chco="+r.replace("#","")+","+m.replace("#","")+"ff,ffffff01&chl="+i+"&chx="+t.replace("#","")+","+j;var q=new GIcon(G_DEFAULT_ICON);q.image=h+"&chf=bg,s,00000000&ext=.png";q.iconSize=new GSize(n,l);q.shadowSize=new GSize(0,0);q.iconAnchor=new GPoint(n/2,l/2);q.infoWindowAnchor=new GPoint(n/2,l/2);q.printImage=h+"&chof=gif";q.mozPrintImage=h+"&chf=bg,s,ECECD8&chof=gif";q.transparent=h+"&chf=a,s,ffffff01&ext=.png";q.imageMap=[];if(p==="itr"){q.imageMap=[0,0,n,0,n,l,0,l]}else{var g=8;var d=360/g;var u=Math.min(n,l)/2;for(var s=0;s<(g+1);s++){var o=d*s*(Math.PI/180);var f=u+u*Math.cos(o);var e=u+u*Math.sin(o);q.imageMap.push(parseInt(f,10),parseInt(e,10))}}return q};MapIconMaker.createLabeledMarkerIcon=function(b){var c=b.primaryColor||"#DA7187";var k=b.strokeColor||"#000000";var g=b.starPrimaryColor||"#FFFF00";var l=b.starStrokeColor||"#0000FF";var h=MapIconMaker.escapeUserText_(b.label)||"";var i=b.labelColor||"#000000";var d=b.addStar||false;var j=(d)?"pin_star":"pin";var e="http://chart.apis.google.com/chart?cht=d&chdp=mapsapi&chl=";var a=e+j+"'i\\'["+h+"'-2'f\\hv'a\\]h\\]o\\"+c.replace("#","")+"'fC\\"+i.replace("#","")+"'tC\\"+k.replace("#","")+"'eC\\";if(d){a+=g.replace("#","")+"'1C\\"+l.replace("#","")+"'0C\\"}a+="Lauto'f\\";var f=new GIcon(G_DEFAULT_ICON);f.image=a+"&ext=.png";f.iconSize=(d)?new GSize(23,39):new GSize(21,34);return f};MapIconMaker.escapeUserText_=function(a){if(a===undefined){return null}a=a.replace(/@/,"@@");a=a.replace(/\\/,"@\\");a=a.replace(/'/,"@'");a=a.replace(/\[/,"@[");a=a.replace(/\]/,"@]");return encodeURIComponent(a)};
+/**
+ * @name MapIconMaker
+ * @version 1.1
+ * @author Pamela Fox
+ * @copyright (c) 2008 Pamela Fox
+ * @fileoverview This gives you static functions for creating dynamically
+ *     sized and colored marker icons using the Charts API marker output.
+ */
+
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License. 
+ */
+
+/**
+ * @name MarkerIconOptions
+ * @class This class represents optional arguments to {@link createMarkerIcon}, 
+ *     {@link createFlatIcon}, or {@link createLabeledMarkerIcon}. Each of the
+ *     functions use a subset of these arguments. See the function descriptions
+ *     for the list of supported options.
+ * @property {Number} [width=32] Specifies, in pixels, the width of the icon.
+ *     The width may include some blank space on the side, depending on the
+ *     height of the icon, as the icon will scale its shape proportionately.
+ * @property {Number} [height=32] Specifies, in pixels, the height of the icon.
+ * @property {String} [primaryColor="#ff0000"] Specifies, as a hexadecimal
+ *     string, the color used for the majority of the icon body.
+ * @property {String} [cornerColor="#ffffff"] Specifies, as a hexadecimal
+ *     string, the color used for the top corner of the icon. If you'd like the
+ *     icon to have a consistent color, make the this the same as the
+ *     {@link primaryColor}.
+ * @property {String} [strokeColor="#000000"] Specifies, as a hexadecimal
+ *     string, the color used for the outside line (stroke) of the icon.
+ * @property {String} [shadowColor="#000000"] Specifies, as a hexadecimal
+ *     string, the color used for the shadow of the icon. 
+ * @property {String} [label=""] Specifies a character or string to display
+ *     inside the body of the icon. Generally, one or two characters looks best.
+ * @property {String} [labelColor="#000000"] Specifies, as a hexadecimal 
+ *     string, the color used for the label text.
+ * @property {Number} [labelSize=0] Specifies, in pixels, the size of the label
+ *     text. If set to 0, the text auto-sizes to fit the icon body.
+ * @property {String} [shape="circle"] Specifies shape of the icon. Current
+ *     options are "circle" for a circle or "roundrect" for a rounded rectangle.
+ * @property {Boolean} [addStar = false] Specifies whether to add a star to the
+ *     edge of the icon.
+ * @property {String} [starPrimaryColor="#FFFF00"] Specifies, as a hexadecimal
+ *     string, the color used for the star body.
+ * @property {String} [starStrokeColor="#0000FF"] Specifies, as a hexadecimal
+ *     string, the color used for the outside line (stroke) of the star.
+ */
+
+/**
+ * This namespace contains functions that you can use to easily create
+ *     dynamically sized, colored, and labeled icons.
+ * @namespace
+ */
+var MapIconMaker = {};
+
+/**
+ * Creates an icon based on the specified options in the 
+ *   {@link MarkerIconOptions} argument.
+ *   Supported options are: width, height, primaryColor, 
+ *   strokeColor, and cornerColor.
+ * @param {MarkerIconOptions} [opts]
+ * @return {GIcon}
+ */
+MapIconMaker.createMarkerIcon = function (opts) {
+  var width = opts.width || 32;
+  var height = opts.height || 32;
+  var primaryColor = opts.primaryColor || "#ff0000";
+  var strokeColor = opts.strokeColor || "#000000";
+  var cornerColor = opts.cornerColor || "#ffffff";
+   
+  var baseUrl = "http://chart.apis.google.com/chart?cht=mm";
+  var iconUrl = baseUrl + "&chs=" + width + "x" + height + 
+      "&chco=" + cornerColor.replace("#", "") + "," + 
+      primaryColor.replace("#", "") + "," + 
+      strokeColor.replace("#", "") + "&ext=.png";
+  var icon = new GIcon(G_DEFAULT_ICON);
+  icon.image = iconUrl;
+  icon.iconSize = new GSize(width, height);
+  icon.shadowSize = new GSize(Math.floor(width * 1.6), height);
+  icon.iconAnchor = new GPoint(width / 2, height);
+  icon.infoWindowAnchor = new GPoint(width / 2, Math.floor(height / 12));
+  icon.printImage = iconUrl + "&chof=gif";
+  icon.mozPrintImage = iconUrl + "&chf=bg,s,ECECD8" + "&chof=gif";
+  iconUrl = baseUrl + "&chs=" + width + "x" + height + 
+      "&chco=" + cornerColor.replace("#", "") + "," + 
+      primaryColor.replace("#", "") + "," + 
+      strokeColor.replace("#", "");
+  icon.transparent = iconUrl + "&chf=a,s,ffffff11&ext=.png";
+
+  icon.imageMap = [
+    width / 2, height,
+    (7 / 16) * width, (5 / 8) * height,
+    (5 / 16) * width, (7 / 16) * height,
+    (7 / 32) * width, (5 / 16) * height,
+    (5 / 16) * width, (1 / 8) * height,
+    (1 / 2) * width, 0,
+    (11 / 16) * width, (1 / 8) * height,
+    (25 / 32) * width, (5 / 16) * height,
+    (11 / 16) * width, (7 / 16) * height,
+    (9 / 16) * width, (5 / 8) * height
+  ];
+  for (var i = 0; i < icon.imageMap.length; i++) {
+    icon.imageMap[i] = parseInt(icon.imageMap[i], 10);
+  }
+
+  return icon;
+};
+
+
+/**
+ * Creates a flat icon based on the specified options in the 
+ *     {@link MarkerIconOptions} argument.
+ *     Supported options are: width, height, primaryColor,
+ *     shadowColor, label, labelColor, labelSize, and shape..
+ * @param {MarkerIconOptions} [opts]
+ * @return {GIcon}
+ */
+MapIconMaker.createFlatIcon = function (opts) {
+  var width = opts.width || 32;
+  var height = opts.height || 32;
+  var primaryColor = opts.primaryColor || "#ff0000";
+  var shadowColor = opts.shadowColor || "#000000";
+  var label = MapIconMaker.escapeUserText_(opts.label) || "";
+  var labelColor = opts.labelColor || "#000000";
+  var labelSize = opts.labelSize || 0;
+  var shape = opts.shape ||  "circle";
+  var shapeCode = (shape === "circle") ? "it" : "itr";
+
+  var baseUrl = "http://chart.apis.google.com/chart?cht=" + shapeCode;
+  var iconUrl = baseUrl + "&chs=" + width + "x" + height + 
+      "&chco=" + primaryColor.replace("#", "") + "," + 
+      shadowColor.replace("#", "") + "ff,ffffff01" +
+      "&chl=" + label + "&chx=" + labelColor.replace("#", "") + 
+      "," + labelSize;
+  var icon = new GIcon(G_DEFAULT_ICON);
+  icon.image = iconUrl + "&chf=bg,s,00000000" + "&ext=.png";
+  icon.iconSize = new GSize(width, height);
+  icon.shadowSize = new GSize(0, 0);
+  icon.iconAnchor = new GPoint(width / 2, height / 2);
+  icon.infoWindowAnchor = new GPoint(width / 2, height / 2);
+  icon.printImage = iconUrl + "&chof=gif";
+  icon.mozPrintImage = iconUrl + "&chf=bg,s,ECECD8" + "&chof=gif";
+  icon.transparent = iconUrl + "&chf=a,s,ffffff01&ext=.png";
+  icon.imageMap = []; 
+  if (shapeCode === "itr") {
+    icon.imageMap = [0, 0, width, 0, width, height, 0, height];
+  } else {
+    var polyNumSides = 8;
+    var polySideLength = 360 / polyNumSides;
+    var polyRadius = Math.min(width, height) / 2;
+    for (var a = 0; a < (polyNumSides + 1); a++) {
+      var aRad = polySideLength * a * (Math.PI / 180);
+      var pixelX = polyRadius + polyRadius * Math.cos(aRad);
+      var pixelY = polyRadius + polyRadius * Math.sin(aRad);
+      icon.imageMap.push(parseInt(pixelX,10), parseInt(pixelY,10));
+    }
+  }
+
+  return icon;
+};
+
+
+/**
+ * Creates a labeled marker icon based on the specified options in the 
+ *     {@link MarkerIconOptions} argument.
+ *     Supported options are: primaryColor, strokeColor, 
+ *     starPrimaryColor, starStrokeColor, label, labelColor, and addStar.
+ * @param {MarkerIconOptions} [opts]
+ * @return {GIcon}
+ */
+MapIconMaker.createLabeledMarkerIcon = function (opts) {
+  var primaryColor = opts.primaryColor || "#DA7187";
+  var strokeColor = opts.strokeColor || "#000000";
+  var starPrimaryColor = opts.starPrimaryColor || "#FFFF00";
+  var starStrokeColor = opts.starStrokeColor || "#0000FF";
+  var label = MapIconMaker.escapeUserText_(opts.label) || "";
+  var labelColor = opts.labelColor || "#000000";
+  var addStar = opts.addStar || false;
+  
+  var pinProgram = (addStar) ? "pin_star" : "pin";
+  var baseUrl = "http://chart.apis.google.com/chart?cht=d&chdp=mapsapi&chl=";
+  var iconUrl = baseUrl + pinProgram + "'i\\" + "'[" + label + 
+      "'-2'f\\"  + "hv'a\\]" + "h\\]o\\" + 
+      primaryColor.replace("#", "")  + "'fC\\" + 
+      labelColor.replace("#", "")  + "'tC\\" + 
+      strokeColor.replace("#", "")  + "'eC\\";
+  if (addStar) {
+    iconUrl += starPrimaryColor.replace("#", "") + "'1C\\" + 
+        starStrokeColor.replace("#", "") + "'0C\\";
+  }
+  iconUrl += "Lauto'f\\";
+
+  var icon = new GIcon(G_DEFAULT_ICON);
+  icon.image = iconUrl + "&ext=.png";
+  icon.iconSize = (addStar) ? new GSize(23, 39) : new GSize(21, 34);
+  return icon;
+};
+
+
+/**
+ * Utility function for doing special chart API escaping first,
+ *  and then typical URL escaping. Must be applied to user-supplied text.
+ * @private
+ */
+MapIconMaker.escapeUserText_ = function (text) {
+  if (text === undefined) {
+    return null;
+  }
+  text = text.replace(/@/, "@@");
+  text = text.replace(/\\/, "@\\");
+  text = text.replace(/'/, "@'");
+  text = text.replace(/\[/, "@[");
+  text = text.replace(/\]/, "@]");
+  return encodeURIComponent(text);
+};
+

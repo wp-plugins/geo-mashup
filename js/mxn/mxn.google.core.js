@@ -1,13 +1,599 @@
-/*
-Copyright (c) 2014 Tom Carden, Steve Coast, Mikel Maron, Andrew Turner, Henri Bergius, Rob Moran, Derek Fowler
-All rights reserved.
+mxn.register('google', {	
 
-Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+Mapstraction: {
+	
+	init: function(element,api) {		
+		var me = this;
 
- * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
- * Neither the name of the Mapstraction nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+		if (typeof GMap2 === 'undefined') {
+			throw new Error(api + ' map script not imported');
+		}
 
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
-mxn.register("google",{Mapstraction:{init:function(a,b){var d=this;if(GMap2){if(GBrowserIsCompatible()){this.maps[b]=new GMap2(a);GEvent.addListener(this.maps[b],"click",function(f,e){if(f&&f.mapstraction_marker){f.mapstraction_marker.click.fire()}else{if(e){d.click.fire({location:new mxn.LatLonPoint(e.y,e.x)})}}if(e){d.clickHandler(e.y,e.x,e,d)}});GEvent.addListener(this.maps[b],"moveend",function(){d.moveendHandler(d);d.endPan.fire()});GEvent.addListener(this.maps[b],"zoomend",function(){d.changeZoom.fire()});this.loaded[b]=true;d.load.fire()}else{alert("browser not compatible with Google Maps")}}else{alert(b+" map script not imported")}},applyOptions:function(){var a=this.maps[this.api];if(this.options.enableScrollWheelZoom){a.enableContinuousZoom();a.enableScrollWheelZoom()}if(this.options.enableDragging){a.enableDragging()}else{a.disableDragging()}},resizeTo:function(b,a){this.currentElement.style.width=b;this.currentElement.style.height=a;this.maps[this.api].checkResize()},addControls:function(a){var b=this.maps[this.api];if(this.controls){while((ctl=this.controls.pop())){b.removeControl(ctl)}}else{this.controls=[]}c=this.controls;if(a.zoom||a.pan){if(a.zoom=="large"){this.addLargeControls()}else{this.addSmallControls()}}if(a.scale){this.controls.unshift(new GScaleControl());b.addControl(this.controls[0]);this.addControlsArgs.scale=true}if(a.overview){c.unshift(new GOverviewMapControl());b.addControl(c[0]);this.addControlsArgs.overview=true}if(a.map_type){this.addMapTypeControls()}},addSmallControls:function(){var a=this.maps[this.api];this.controls.unshift(new GSmallMapControl());a.addControl(this.controls[0]);this.addControlsArgs.zoom="small";this.addControlsArgs.pan=true},addLargeControls:function(){var a=this.maps[this.api];this.controls.unshift(new GLargeMapControl());a.addControl(this.controls[0]);this.addControlsArgs.zoom="large";this.addControlsArgs.pan=true},addMapTypeControls:function(){var a=this.maps[this.api];this.controls.unshift(new GMapTypeControl());a.addControl(this.controls[0]);this.addControlsArgs.map_type=true},setCenterAndZoom:function(a,b){var e=this.maps[this.api];var d=a.toProprietary(this.api);e.setCenter(d,b)},addMarker:function(b,a){var e=this.maps[this.api];var d=b.toProprietary(this.api);e.addOverlay(d);GEvent.addListener(d,"infowindowopen",function(){b.openInfoBubble.fire()});GEvent.addListener(d,"infowindowclose",function(){b.closeInfoBubble.fire()});return d},removeMarker:function(a){var b=this.maps[this.api];b.removeOverlay(a.proprietary_marker)},declutterMarkers:function(a){throw"Not supported"},addPolyline:function(b,a){var d=this.maps[this.api];gpolyline=b.toProprietary(this.api);d.addOverlay(gpolyline);return gpolyline},removePolyline:function(a){var b=this.maps[this.api];b.removeOverlay(a.proprietary_polyline)},getCenter:function(){var d=this.maps[this.api];var b=d.getCenter();var a=new mxn.LatLonPoint(b.lat(),b.lng());return a},setCenter:function(a,b){var e=this.maps[this.api];var d=a.toProprietary(this.api);if(b&&b.pan){e.panTo(d)}else{e.setCenter(d)}},setZoom:function(a){var b=this.maps[this.api];b.setZoom(a)},getZoom:function(){var a=this.maps[this.api];return a.getZoom()},getZoomLevelForBoundingBox:function(g){var f=this.maps[this.api];var e=g.getNorthEast();var a=g.getSouthWest();var b=new GLatLngBounds(a.toProprietary(this.api),e.toProprietary(this.api));var d=f.getBoundsZoomLevel(b);return d},setMapType:function(a){var b=this.maps[this.api];switch(a){case mxn.Mapstraction.ROAD:b.setMapType(G_NORMAL_MAP);break;case mxn.Mapstraction.SATELLITE:b.setMapType(G_SATELLITE_MAP);break;case mxn.Mapstraction.HYBRID:b.setMapType(G_HYBRID_MAP);break;case mxn.Mapstraction.PHYSICAL:b.setMapType(G_PHYSICAL_MAP);break;default:b.setMapType(a||G_NORMAL_MAP)}},getMapType:function(){var b=this.maps[this.api];var a=b.getCurrentMapType();switch(a){case G_NORMAL_MAP:return mxn.Mapstraction.ROAD;case G_SATELLITE_MAP:return mxn.Mapstraction.SATELLITE;case G_HYBRID_MAP:return mxn.Mapstraction.HYBRID;case G_PHYSICAL_MAP:return mxn.Mapstraction.PHYSICAL;default:return null}},getBounds:function(){var g=this.maps[this.api];var f,a,b,e;var d=g.getBounds();a=d.getSouthWest();f=d.getNorthEast();return new mxn.BoundingBox(a.lat(),a.lng(),f.lat(),f.lng())},setBounds:function(b){var e=this.maps[this.api];var a=b.getSouthWest();var d=b.getNorthEast();var f=new GLatLngBounds(new GLatLng(a.lat,a.lon),new GLatLng(d.lat,d.lon));e.setCenter(f.getCenter(),e.getBoundsZoomLevel(f))},addImageOverlay:function(d,a,f,j,g,h,e,i){var b=this.maps[this.api];b.getPane(G_MAP_MAP_PANE).appendChild(i.imgElm);this.setImageOpacity(d,f);this.setImagePosition(d);GEvent.bind(b,"zoomend",this,function(){this.setImagePosition(d)});GEvent.bind(b,"moveend",this,function(){this.setImagePosition(d)})},setImagePosition:function(f,b){var e=this.maps[this.api];var d;var a;d=e.fromLatLngToDivPixel(new GLatLng(b.latLng.top,b.latLng.left));a=e.fromLatLngToDivPixel(new GLatLng(b.latLng.bottom,b.latLng.right));b.pixels.top=d.y;b.pixels.left=d.x;b.pixels.bottom=a.y;b.pixels.right=a.x},addOverlay:function(a,b){var e=this.maps[this.api];var d=new GGeoXml(a);if(b){GEvent.addListener(d,"load",function(){d.gotoDefaultViewport(e)})}e.addOverlay(d)},addTileLayer:function(i,b,a,h,e,j){var d=new GCopyright(1,new GLatLngBounds(new GLatLng(-90,-180),new GLatLng(90,180)),0,"copyleft");var f=new GCopyrightCollection(a);f.addCopyright(d);var g=[];g[0]=new GTileLayer(f,h,e);g[0].isPng=function(){return true};g[0].getOpacity=function(){return b};g[0].getTileUrl=function(m,l){url=i;url=url.replace(/\{Z\}/g,l);url=url.replace(/\{X\}/g,m.x);url=url.replace(/\{Y\}/g,m.y);return url};if(j){var k=new GMapType(g,new GMercatorProjection(19),a,{errorMessage:"More "+a+" tiles coming soon"});this.maps[this.api].addMapType(k)}else{k=new GTileLayerOverlay(g[0]);this.maps[this.api].addOverlay(k)}this.tileLayers.push([i,k,true]);return k},toggleTileLayer:function(b){for(var a=0;a<this.tileLayers.length;a++){if(this.tileLayers[a][0]==b){if(this.tileLayers[a][2]){this.maps[this.api].removeOverlay(this.tileLayers[a][1]);this.tileLayers[a][2]=false}else{this.maps[this.api].addOverlay(this.tileLayers[a][1]);this.tileLayers[a][2]=true}}}},getPixelRatio:function(){var f=this.maps[this.api];var b=G_NORMAL_MAP.getProjection();var g=f.getCenter();var e=f.getZoom();var d=b.fromLatLngToPixel(g,e);var a=b.fromPixelToLatLng(new GPoint(d.x+3,d.y+4),e);return 10000/a.distanceFrom(g)},mousePosition:function(a){var d=document.getElementById(a);if(d!==null){var b=this.maps[this.api];GEvent.addListener(b,"mousemove",function(e){var f=e.lat().toFixed(4)+" / "+e.lng().toFixed(4);d.innerHTML=f});d.innerHTML="0.0000 / 0.0000"}}},LatLonPoint:{toProprietary:function(){return new GLatLng(this.lat,this.lon)},fromProprietary:function(a){this.lat=a.lat();this.lon=a.lng()}},Marker:{toProprietary:function(){var f=this;var e,g,i,a;var j={};if(this.labelText){j.title=this.labelText}if(this.iconUrl){var h=new GIcon(G_DEFAULT_ICON,this.iconUrl);h.printImage=h.mozPrintImage=h.image;if(this.iconSize){h.iconSize=new GSize(this.iconSize[0],this.iconSize[1]);var d;if(this.iconAnchor){d=new GPoint(this.iconAnchor[0],this.iconAnchor[1])}else{d=new GPoint(this.iconSize[0]/2,this.iconSize[1]/2)}h.iconAnchor=d}if(typeof(this.iconShadowUrl)!="undefined"){h.shadow=this.iconShadowUrl;if(this.iconShadowSize){h.shadowSize=new GSize(this.iconShadowSize[0],this.iconShadowSize[1])}}else{h.shadow="";h.shadowSize=""}if(this.transparent){h.transparent=this.transparent}if(this.imageMap){h.imageMap=this.imageMap}j.icon=h}if(this.draggable){j.draggable=this.draggable}var b=new GMarker(this.location.toProprietary("google"),j);if(this.infoBubble){if(this.hover){g="mouseover"}else{g="click"}GEvent.addListener(b,g,function(){b.openInfoWindowHtml(f.infoBubble,{maxWidth:100})})}if(this.hoverIconUrl){GEvent.addListener(b,"mouseover",function(){b.setImage(f.hoverIconUrl)});GEvent.addListener(b,"mouseout",function(){b.setImage(f.iconUrl)})}if(this.infoDiv){if(this.hover){g="mouseover"}else{g="click"}GEvent.addListener(b,g,function(){document.getElementById(f.div).innerHTML=f.infoDiv})}return b},openBubble:function(){var a=this.proprietary_marker;a.openInfoWindowHtml(this.infoBubble)},closeBubble:function(){var a=this.proprietary_marker;a.closeInfoWindow()},hide:function(){this.proprietary_marker.hide()},show:function(){this.proprietary_marker.show()},update:function(){point=new mxn.LatLonPoint();point.fromProprietary("google",this.proprietary_marker.getPoint());this.location=point}},Polyline:{toProprietary:function(){var a=[];for(var b=0,d=this.points.length;b<d;b++){a.push(this.points[b].toProprietary("google"))}if(this.closed||a[0].equals(a[d-1])){return new GPolygon(a,this.color,this.width,this.opacity,this.fillColor||"#5462E3",this.opacity||"0.3")}else{return new GPolyline(a,this.color,this.width,this.opacity)}},show:function(){throw"Not implemented"},hide:function(){throw"Not implemented"}}});
+		if (!GBrowserIsCompatible()) {
+			throw new Error('This browser is not compatible with Google Maps');
+		}
+
+		this.controls =  {
+			pan: null,
+			zoom: null,
+			overview: null,
+			scale: null,
+			map_type: null
+		};
+		
+		this.maps[api] = new GMap2(element);
+
+		GEvent.addListener(this.maps[api], 'click', function(marker,location) {
+			
+			if ( marker && marker.mapstraction_marker ) {
+				marker.mapstraction_marker.click.fire();
+			}
+			else if ( location ) {
+				me.click.fire({'location': new mxn.LatLonPoint(location.y, location.x)});
+			}
+			
+			// If the user puts their own Google markers directly on the map
+			// then there is no location and this event should not fire.
+			if ( location ) {
+				me.clickHandler(location.y,location.x,location,me);
+			}
+		});
+
+		GEvent.addListener(this.maps[api], 'moveend', function() {
+			me.moveendHandler(me);
+			me.endPan.fire();
+		});
+		
+		GEvent.addListener(this.maps[api], 'zoomend', function() {
+			me.changeZoom.fire();
+		});
+		
+		var loadListener = GEvent.addListener(this.maps[api], 'tilesloaded', function() {
+			me.load.fire();
+			GEvent.removeListener(loadListener);
+		});
+		
+		this.loaded[api] = true;
+		me.load.fire();
+	},
+	
+	applyOptions: function(){
+		var map = this.maps[this.api];
+		
+		if(this.options.enableScrollWheelZoom){
+			map.enableContinuousZoom();
+			map.enableScrollWheelZoom();
+		}
+		
+		if (this.options.enableDragging) {
+			map.enableDragging();
+		} else {
+			map.disableDragging();
+		}
+		
+	},
+
+	resizeTo: function(width, height){	
+		this.currentElement.style.width = width;
+		this.currentElement.style.height = height;
+		this.maps[this.api].checkResize(); 
+	},
+
+	addControls: function( args ) {
+		/* args = { 
+		 *     pan:      true,
+		 *     zoom:     'large' || 'small',
+		 *     overview: true,
+		 *     scale:    true,
+		 *     map_type: true,
+		 * }
+		 */
+
+		var map = this.maps[this.api];
+	
+		if ('zoom' in args || ('pan' in args && args.pan)) {
+			if (args.pan || args.zoom == 'small') {
+				this.addSmallControls();
+			}
+			
+			else if (args.zoom == 'large') {
+				this.addLargeControls();
+			}
+		}
+		
+		else {
+			if (this.controls.zoom !== null) {
+				map.removeControl(this.controls.zoom);
+				this.controls.zoom = null;
+			}
+		}
+		
+		if ('overview' in args && args.overview) {
+			if (this.controls.overview === null) {
+				this.controls.overview = new GOverviewMapControl();
+				map.addControl(this.controls.overview);
+			}
+		}
+		
+		else {
+			if (this.controls.overview !== null) {
+				map.removeControl(this.controls.overview);
+				this.controls.overview = null;
+			}
+		}
+
+		if ('scale' in args && args.scale) {
+			if (this.controls.scale === null) {
+				this.controls.scale = new GScaleControl();
+				map.addControl(this.controls.scale);
+			}
+		}
+		
+		else {
+			if (this.controls.scale !== null) {
+				map.removeControl(this.controls.scale);
+				this.controls.scale = null;
+			}
+		}
+		
+		if ('map_type' in args && args.map_type) {
+			this.addMapTypeControls();
+		}
+		
+		else {
+			if (this.controls.map_type !== null) {
+				map.removeControl(this.controls.map_type);
+				this.controls.map_type = null;
+			}
+		}
+	},
+
+	addSmallControls: function() {
+		var map = this.maps[this.api];
+		
+		if (this.controls.zoom !== null) {
+			map.removeControl(this.controls.zoom);
+		}
+
+		this.controls.zoom = new GSmallMapControl();
+		map.addControl(this.controls.zoom);
+	},
+
+	addLargeControls: function() {
+		var map = this.maps[this.api];
+		
+		if (this.controls.zoom !== null) {
+			map.removeControl(this.controls.zoom);
+		}
+
+		this.controls.zoom = new GLargeMapControl();
+		map.addControl(this.controls.zoom);
+	},
+
+	addMapTypeControls: function() {
+		var map = this.maps[this.api];
+
+		if (this.controls.map_type === null) {
+			this.controls.map_type = new GMapTypeControl();
+			map.addControl(this.controls.map_type);
+		}
+	},
+
+	setCenterAndZoom: function(point, zoom) { 
+		var map = this.maps[this.api];
+		var pt = point.toProprietary(this.api);
+		map.setCenter(pt, zoom); 
+	},
+	
+	addMarker: function(marker, old) {
+		var map = this.maps[this.api];
+		var gpin = marker.toProprietary(this.api);
+		map.addOverlay(gpin);
+		
+		GEvent.addListener(gpin, 'infowindowopen', function() {
+			marker.openInfoBubble.fire();
+		});
+		GEvent.addListener(gpin, 'infowindowclose', function() {
+			marker.closeInfoBubble.fire();
+		});		
+		return gpin;
+	},
+
+	removeMarker: function(marker) {
+		var map = this.maps[this.api];
+		map.removeOverlay(marker.proprietary_marker);
+	},
+	
+	declutterMarkers: function(opts) {
+		throw new Error('Mapstraction.declutterMarkers is not currently supported by provider ' + this.api);
+	},
+
+	addPolyline: function(polyline, old) {
+		var map = this.maps[this.api];
+		gpolyline = polyline.toProprietary(this.api);
+		map.addOverlay(gpolyline);
+		return gpolyline;
+	},
+
+	removePolyline: function(polyline) {
+		var map = this.maps[this.api];
+		map.removeOverlay(polyline.proprietary_polyline);
+	},
+
+	getCenter: function() {
+		var map = this.maps[this.api];
+		var pt = map.getCenter();
+		var point = new mxn.LatLonPoint(pt.lat(),pt.lng());
+		return point;
+	},
+
+	setCenter: function(point, options) {
+		var map = this.maps[this.api];
+		var pt = point.toProprietary(this.api);
+		if(options && options.pan) { 
+			map.panTo(pt); 
+		}
+		else { 
+			map.setCenter(pt);
+		}
+	},
+
+	setZoom: function(zoom) {
+		var map = this.maps[this.api];
+		map.setZoom(zoom);			  
+	},
+	
+	getZoom: function() {
+		var map = this.maps[this.api];
+		return map.getZoom();
+	},
+
+	getZoomLevelForBoundingBox: function( bbox ) {
+		var map = this.maps[this.api];
+		// NE and SW points from the bounding box.
+		var ne = bbox.getNorthEast();
+		var sw = bbox.getSouthWest();
+		var gbox = new GLatLngBounds( sw.toProprietary(this.api), ne.toProprietary(this.api) );
+		var zoom = map.getBoundsZoomLevel( gbox );
+		return zoom;
+	},
+
+	setMapType: function(type) {
+		var map = this.maps[this.api];
+		switch(type) {
+			case mxn.Mapstraction.ROAD:
+				map.setMapType(G_NORMAL_MAP);
+				break;
+			case mxn.Mapstraction.SATELLITE:
+				map.setMapType(G_SATELLITE_MAP);
+				break;
+			case mxn.Mapstraction.HYBRID:
+				map.setMapType(G_HYBRID_MAP);
+				break;
+			case mxn.Mapstraction.PHYSICAL:
+				map.setMapType(G_PHYSICAL_MAP);
+				break;
+			default:
+				map.setMapType(type || G_NORMAL_MAP);
+		}	 
+	},
+
+	getMapType: function() {
+		var map = this.maps[this.api];
+		var type = map.getCurrentMapType();
+		switch(type) {
+			case G_NORMAL_MAP:
+				return mxn.Mapstraction.ROAD;
+			case G_SATELLITE_MAP:
+				return mxn.Mapstraction.SATELLITE;
+			case G_HYBRID_MAP:
+				return mxn.Mapstraction.HYBRID;
+			case G_PHYSICAL_MAP:
+				return mxn.Mapstraction.PHYSICAL;
+			default:
+				return null;
+		}
+	},
+
+	getBounds: function () {
+		var map = this.maps[this.api];
+		var ne, sw, nw, se;
+		var gbox = map.getBounds();
+		sw = gbox.getSouthWest();
+		ne = gbox.getNorthEast();
+		return new mxn.BoundingBox(sw.lat(), sw.lng(), ne.lat(), ne.lng());
+	},
+
+	setBounds: function(bounds){
+		var map = this.maps[this.api];
+		var sw = bounds.getSouthWest();
+		var ne = bounds.getNorthEast();
+		var gbounds = new GLatLngBounds(new GLatLng(sw.lat,sw.lon),new GLatLng(ne.lat,ne.lon));
+		map.setCenter(gbounds.getCenter(), map.getBoundsZoomLevel(gbounds)); 
+	},
+
+	addImageOverlay: function(id, src, opacity, west, south, east, north, oContext) {
+		var map = this.maps[this.api];
+		map.getPane(G_MAP_MAP_PANE).appendChild(oContext.imgElm);
+		this.setImageOpacity(id, opacity);
+		this.setImagePosition(id);
+		GEvent.bind(map, "zoomend", this, function() {
+			this.setImagePosition(id);
+		});
+		GEvent.bind(map, "moveend", this, function() {
+			this.setImagePosition(id);
+		});
+	},
+
+	setImagePosition: function(id, oContext) {
+		var map = this.maps[this.api];
+		var topLeftPoint; var bottomRightPoint;
+
+		topLeftPoint = map.fromLatLngToDivPixel( new GLatLng(oContext.latLng.top, oContext.latLng.left) );
+		bottomRightPoint = map.fromLatLngToDivPixel( new GLatLng(oContext.latLng.bottom, oContext.latLng.right) );
+		
+		oContext.pixels.top = topLeftPoint.y;
+		oContext.pixels.left = topLeftPoint.x;
+		oContext.pixels.bottom = bottomRightPoint.y;
+		oContext.pixels.right = bottomRightPoint.x;
+	},
+	
+	addOverlay: function(url, autoCenterAndZoom) {
+		var map = this.maps[this.api];
+		var geoXML = new GGeoXml(url);
+		if(autoCenterAndZoom) {
+			GEvent.addListener( geoXML, 'load', function() { geoXML.gotoDefaultViewport(map); } );
+		}
+		map.addOverlay(geoXML);
+	},
+
+	addTileLayer: function(tile_url, opacity, label, attribution, min_zoom, max_zoom, map_type, subdomains) {
+		var copyright = new GCopyright(1, new GLatLngBounds(new GLatLng(-90,-180), new GLatLng(90,180)), 0, label);
+		var copyrightCollection = new GCopyrightCollection(attribution);
+		copyrightCollection.addCopyright(copyright);
+		var tilelayer = new GTileLayer(copyrightCollection, min_zoom, max_zoom);
+		tilelayer.isPng = function() {
+			return true;
+		};
+		tilelayer.getOpacity = function() {
+			return opacity;
+		};
+		tilelayer.getTileUrl = function (a, b) {
+			var url = mxn.util.sanitizeTileURL(tile_url);
+			if (typeof subdomains !== 'undefined') {
+				url = mxn.util.getSubdomainTileURL(url, subdomains);
+			}
+			url = url.replace(/\{Z\}/gi,b);
+			url = url.replace(/\{X\}/gi,a.x);
+			url = url.replace(/\{Y\}/gi,a.y);
+			return url;
+		};
+
+		if (map_type) {
+			var tileLayerOverlay = new GMapType(this.tilelayers, new GMercatorProjection(19), label, {
+				errorMessage:"More "+label+" tiles coming soon"
+			});		
+			this.maps[this.api].addMapType(tileLayerOverlay);
+		} else {
+			tileLayerOverlay = new GTileLayerOverlay(tilelayer);
+			this.maps[this.api].addOverlay(tileLayerOverlay);
+		}		
+		this.tileLayers.push( [tile_url, tileLayerOverlay, true] );
+		return tileLayerOverlay;
+	},
+
+	toggleTileLayer: function(tile_url) {
+		for (var f=0; f<this.tileLayers.length; f++) {
+			if(this.tileLayers[f][0] == tile_url) {
+				if(this.tileLayers[f][2]) {
+					this.maps[this.api].removeOverlay(this.tileLayers[f][1]);
+					this.tileLayers[f][2] = false;
+				}
+				else {
+					this.maps[this.api].addOverlay(this.tileLayers[f][1]);
+					this.tileLayers[f][2] = true;
+				}
+			}
+		}	   
+	},
+
+	getPixelRatio: function() {
+		var map = this.maps[this.api];
+
+		var projection = G_NORMAL_MAP.getProjection();
+		var centerPoint = map.getCenter();
+		var zoom = map.getZoom();
+		var centerPixel = projection.fromLatLngToPixel(centerPoint, zoom);
+		// distance is the distance in metres for 5 pixels (3-4-5 triangle)
+		var distancePoint = projection.fromPixelToLatLng(new GPoint(centerPixel.x + 3, centerPixel.y + 4), zoom);
+		//*1000(km to m), /5 (pythag), *2 (radius to diameter)
+		return 10000/distancePoint.distanceFrom(centerPoint);
+	
+	},
+	
+	mousePosition: function(element) {
+		var locDisp = document.getElementById(element);
+		if (locDisp !== null) {
+			var map = this.maps[this.api];
+			GEvent.addListener(map, 'mousemove', function (point) {
+				var loc = point.lat().toFixed(4) + ' / ' + point.lng().toFixed(4);
+				locDisp.innerHTML = loc;
+			});
+			locDisp.innerHTML = '0.0000 / 0.0000';
+		}
+	}
+},
+
+LatLonPoint: {
+	
+	toProprietary: function() {
+		return new GLatLng(this.lat,this.lon);
+	},
+
+	fromProprietary: function(googlePoint) {
+		this.lat = googlePoint.lat();
+		this.lon = googlePoint.lng();
+	}
+	
+},
+
+Marker: {
+	
+	toProprietary: function() {
+		var me = this;
+		var infoBubble, event_action, infoDiv, div;
+		var options = {};
+		if (this.labelText) {
+			options.title =  this.labelText;
+		}
+		if (this.iconUrl) {
+			var icon = new GIcon(G_DEFAULT_ICON, this.iconUrl);
+			icon.printImage = icon.mozPrintImage = icon.image;
+			if (this.iconSize) {
+				icon.iconSize = new GSize(this.iconSize[0], this.iconSize[1]);
+				var anchor;
+				if (this.iconAnchor) {
+					anchor = new GPoint(this.iconAnchor[0], this.iconAnchor[1]);
+				}
+				else {
+					// FIXME: hard-coding the anchor point
+					anchor = new GPoint(this.iconSize[0]/2, this.iconSize[1]/2);
+				}
+				icon.iconAnchor = anchor;
+			}
+			if (typeof(this.iconShadowUrl) != 'undefined') {
+				icon.shadow = this.iconShadowUrl;
+				if(this.iconShadowSize) {
+					icon.shadowSize = new GSize(this.iconShadowSize[0], this.iconShadowSize[1]);
+				}
+			} 
+			else {  // turn off shadow
+  				icon.shadow = '';
+				icon.shadowSize = '';
+			}
+			if (this.transparent) {
+  				icon.transparent = this.transparent;
+			}
+			if (this.imageMap) {
+  				icon.imageMap = this.imageMap;
+			}
+			options.icon = icon;
+		}
+		if (this.draggable) {
+			options.draggable = this.draggable;
+		}
+		var gmarker = new GMarker( this.location.toProprietary('google'),options);
+				
+		if (this.infoBubble) {
+			if (this.hover) {
+				event_action = "mouseover";
+			}
+			else {
+				event_action = "click";
+			}
+			GEvent.addListener(gmarker, event_action, function() {
+				gmarker.openInfoWindowHtml(me.infoBubble, {
+					maxWidth: 100
+				});
+			});
+		}
+
+		if (this.hoverIconUrl) {
+			GEvent.addListener(gmarker, "mouseover", function() {
+				gmarker.setImage(me.hoverIconUrl);
+			});
+			GEvent.addListener(gmarker, "mouseout", function() {
+				gmarker.setImage(me.iconUrl);
+			});
+		}
+
+		if (this.infoDiv) {
+			if (this.hover) {
+				event_action = "mouseover";
+			}
+			else {
+				event_action = "click";
+			}
+			GEvent.addListener(gmarker, event_action, function() {
+				document.getElementById(me.div).innerHTML = me.infoDiv;
+			});
+		}
+
+		return gmarker;
+	},
+
+	openBubble: function() {
+		var gpin = this.proprietary_marker;
+		gpin.openInfoWindowHtml(this.infoBubble);
+		this.openInfoBubble.fire( { 'marker': this } );
+	},
+	
+	closeBubble: function() {
+		var gpin = this.proprietary_marker;
+		gpin.closeInfoWindow();
+		this.closeInfoBubble.fire( { 'marker': this } );
+	},
+
+	hide: function() {
+		this.proprietary_marker.hide();
+	},
+
+	show: function() {
+		this.proprietary_marker.show();
+	},
+
+	update: function() {
+		point = new mxn.LatLonPoint();
+		point.fromProprietary('google', this.proprietary_marker.getPoint());
+		this.location = point;
+	}
+	
+},
+
+Polyline: {
+
+	toProprietary: function() {
+		var coords = [];
+
+		for (var i = 0,  length = this.points.length ; i< length; i++){
+			coords.push(this.points[i].toProprietary('google'));
+		}
+
+		// Drawing a polygon in Google v2 where the first and last point are not equal
+		// results in "undefined behaviour", which seems to mean that the polygon will be
+		// filled but the enclosing line will not be closed. So we need to ensure that
+		// if this is a polygon, the first and last point match and push the first point
+		// to the end of the points array if this isn't the case ...
+		// see https://developers.google.com/maps/documentation/javascript/v2/overlays#Polygons_Overview
+		
+		if (this.closed) {
+			if (!(this.points[0].equals(this.points[this.points.length - 1]))) {
+				coords.push(coords[0]);
+			}
+		}
+
+		else if (this.points[0].equals(this.points[this.points.length - 1])) {
+			this.closed = true;
+		}
+		
+		if (this.closed) {
+			this.proprietary_polyline = new GPolygon(coords, this.color, this.width, this.opacity, this.fillColor, this.opacity);
+		}
+		
+		else {
+			this.proprietary_polyline = new GPolyline(coords, this.color, this.width, this.opacity);
+		}
+		
+		return this.proprietary_polyline;
+	},
+	
+	show: function() {
+		this.proprietary_polyline.show();
+	},
+
+	hide: function() {
+		this.proprietary_polyline.hide();
+	}
+}
+
+});
