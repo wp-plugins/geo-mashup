@@ -3,7 +3,7 @@ Contributors: cyberhobo
 Donate Link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=11045324
 Tags: map, maps, google maps, google map, mapping, mashup, geo, google, geocms
 Requires at least: 3.7
-Tested up to: 3.9.1
+Tested up to: 4.0
 Stable tag: 1.8.0
 License: GPL2+
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
