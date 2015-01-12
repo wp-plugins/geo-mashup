@@ -3,7 +3,7 @@
 Plugin Name: Geo Mashup
 Plugin URI: http://code.google.com/p/wordpress-geo-mashup/ 
 Description: Save location for posts and pages, or even users and comments. Display these locations on Google, Leaflet, and OSM maps. Make WordPress into your GeoCMS.
-Version: 1.8.2
+Version: 1.8.3
 Author: Dylan Kuhn
 Author URI: http://www.cyberhobo.net/
 Minimum WordPress Version Required: 3.0
@@ -202,7 +202,7 @@ class GeoMashup {
 		define('GEO_MASHUP_DIRECTORY', dirname( GEO_MASHUP_PLUGIN_NAME ) );
 		define('GEO_MASHUP_URL_PATH', trim( plugin_dir_url( __FILE__ ), '/' ) );
 		define('GEO_MASHUP_MAX_ZOOM', 20);
-		define('GEO_MASHUP_VERSION', '1.8.2');
+		define('GEO_MASHUP_VERSION', '1.8.3');
 		define('GEO_MASHUP_DB_VERSION', '1.3');
 	}
 
@@ -1595,28 +1595,24 @@ class GeoMashup {
 		$defaults = array( 'zoom' => '' );
 		$args = wp_parse_args( $args, $defaults );
 
+		$args = array_filter( $args );
+
 		$url = '';
 		$location = self::current_location_guess();
 
 		if ( $location ) {
 			$url = get_page_link($geo_mashup_options->get('overall', 'mashup_page'));
-			if ( !$url ) {
-				return $url;
-			}
-			if ( strstr( $url, '?' ) ) {
-				$url .= '&amp;';
-			} else {
-				$url .= '?';
-			}
-			$open = '';
-			if ( $geo_mashup_options->get( 'global_map', 'auto_info_open' ) == 'true' ) {
-				$open = '&open_object_id=' . $location->object_id;
-			}
-			$zoom = '';
-			if ( !empty( $args['zoom'] ) ) {
-				$zoom = '&zoom=' . urlencode( $args['zoom'] );
-			}
-			$url .= htmlentities("center_lat={$location->lat}&center_lng={$location->lng}$open$zoom");
+
+			if ( !$url )
+				return '';
+
+			$args['center_lat'] = $location->lat;
+			$args['center_lng'] = $location->lng;
+
+			if ( $geo_mashup_options->get( 'global_map', 'auto_info_open' ) == 'true' )
+				$args['open_object_id'] = $location->object_id;
+
+			$url = htmlentities( add_query_arg( $args, $url ) );
 		}
 		return $url;
 	}
@@ -1837,7 +1833,10 @@ class GeoMashup {
 			if ( $near_location ) {
 				$args['near_lat'] = $near_location->lat;
 				$args['near_lng'] = $near_location->lng;
-				$args['exclude_object_ids'] = $object_id;
+				if ( empty( $args['exclude_object_ids'] ) )
+					$args['exclude_object_ids'] = $object_id;
+				else
+					$args['exclude_object_ids'] .= ',' . $object_id;
 			}
 		}
 

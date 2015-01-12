@@ -3,8 +3,8 @@ Contributors: cyberhobo
 Donate Link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=11045324
 Tags: map, maps, google maps, google map, mapping, mashup, geo, google, geocms
 Requires at least: 3.7
-Tested up to: 4.0
-Stable tag: 1.8.2
+Tested up to: 4.1
+Stable tag: 1.8.3
 License: GPL2+
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -104,16 +104,24 @@ of all your content, including geographic data.
 There shouldn't be anything too unusual, but there is 
 [detailed documentation](http://code.google.com/p/wordpress-geo-mashup/wiki/Documentation#First_Time_Installation).
 
-== Upgrade Notice ==
+= Upgrading =
 
 The automatic upgrade is fine for most people, but
-if you've added or changed things in the Geo Mashup plugin folder, please look at the 
+if you've added or changed things in the Geo Mashup plugin folder, please look at the
 [upgrade considerations](http://code.google.com/p/wordpress-geo-mashup/wiki/UpgradeConsiderations)
 for the best way to keep your custom files safe moving forward.
+
+== Upgrade Notice ==
+
+= 1.8.3 =
+This version fixes a security related bug.  Upgrade immediately.
 
 == Change Log ==
 
 Features are generally added in one-dot releases, while two-dot releases contain fixes and small updates.
+
+= 1.8.3 Jan 11 2015 =
+[milestone 1.8.3 changes](http://code.google.com/p/wordpress-geo-mashup/issues/list?can=1&q=Milestone%3D1.8.3)
 
 = 1.8.2 Nov 17 2014 =
 [milestone 1.8.2 changes](http://code.google.com/p/wordpress-geo-mashup/issues/list?can=1&q=Milestone%3D1.8.2)

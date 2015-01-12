@@ -522,11 +522,11 @@ mxn.register('openlayers', {
 
 		addOverlay: function(url, autoCenterAndZoom) {
 			var map = this.maps[this.api];
-			var kml = new OpenLayers.Layer.GML("kml", url,{
-				'format'       : OpenLayers.Format.KML,
-				'formatOptions': new OpenLayers.Format.KML({
-					'extractStyles'    : true,
-					'extractAttributes': true
+			var kml = new OpenLayers.Layer.Vector("kml", {
+				'strategies'   : [new OpenLayers.Strategy.Fixed()],
+				'protocol'     : new OpenLayers.Protocol.HTTP({
+					'url'   : url,
+					'format': new OpenLayers.Format.KML
 				}),
 				'projection'   : new OpenLayers.Projection('EPSG:4326')
 			});
@@ -718,7 +718,7 @@ mxn.register('openlayers', {
 		},
 
 		hide: function() {
-			delete this.proprietary_marker.style.display;
+			this.proprietary_marker.style.display = 'none';
 			this.proprietary_marker.layer.redraw();		
 		},
 
